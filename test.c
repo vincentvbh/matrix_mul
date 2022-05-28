@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include <vector>
 
@@ -61,24 +62,72 @@ int main(void){
     Eigen::Matrix<int16_t, DIM_I, DIM_K> M0 = Eigen::Matrix<int16_t, DIM_I, DIM_K>::Random();
     Eigen::Matrix<int16_t, DIM_K, DIM_J> M1 = Eigen::Matrix<int16_t, DIM_K, DIM_J>::Random();
 
-    // Eigen::SparseMatrix<int16_t> SparseM(DIM, DIM);
-    // Eigen::SparseMatrix<int16_t> SparseM0(DIM, DIM);
-    // Eigen::SparseMatrix<int16_t> SparseM1(DIM, DIM);
+    Eigen::SparseMatrix<int16_t> SparseM(DIM, DIM);
+    Eigen::SparseMatrix<int16_t> CondenseM(DIM, DIM);
+    Eigen::SparseMatrix<int16_t> SparseM0(DIM, DIM);
+    Eigen::SparseMatrix<int16_t, Eigen::RowMajor> SparseM1(DIM, DIM);
+    Eigen::SparseMatrix<int16_t> CondenseM00(DIM, DIM);
+    Eigen::SparseMatrix<int16_t> CondenseM01(DIM, DIM);
+    Eigen::SparseMatrix<int16_t, Eigen::RowMajor> CondenseM10(DIM, DIM);
+    Eigen::SparseMatrix<int16_t, Eigen::RowMajor> CondenseM11(DIM, DIM);
 
-    // std::vector<Eigen::Triplet<int16_t>> SparseCoeffs;
+    std::vector<Eigen::Triplet<int16_t>> SparseCol;
+    std::vector<Eigen::Triplet<int16_t>> CondenseCol0;
+    std::vector<Eigen::Triplet<int16_t>> CondenseCol1;
+    std::vector<Eigen::Triplet<int16_t>> SparseRow;
+    std::vector<Eigen::Triplet<int16_t>> CondenseRow0;
+    std::vector<Eigen::Triplet<int16_t>> CondenseRow1;
 
-    // for(int i = 0; i < DIM; i++){
-    //     for(int j = 0; j < DIM; j++){
-    //         if(((rand() & 0x3ff) == 0)){
-    //             SparseCoeffs.push_back(Eigen::Triplet<int16_t>(i, j, i * DIM + j));
-    //         }
+    std::vector<int16_t> buff0;
+    std::vector<int16_t> buff1;
+
+    for(int i = 0; i < DIM; i++){
+        for(int j = 0; j < DIM; j++){
+            if(j < DIM_J){
+                if( (rand() & 0x3f) == 0 ){
+                    SparseCol.push_back(Eigen::Triplet<int16_t>(i, j, i * DIM + j));
+                    CondenseCol0.push_back(Eigen::Triplet<int16_t>(i, j, i * DIM + j));
+                }
+            }else{
+                if( (rand() & 0x3ff) == 0 ){
+                    SparseCol.push_back(Eigen::Triplet<int16_t>(i, j, i * DIM + j));
+                    CondenseCol1.push_back(Eigen::Triplet<int16_t>(i, j, i * DIM + j));
+                }
+            }
+        }
+    }
+
+    for(int i = 0; i < DIM; i++){
+        for(int j = 0; j < DIM; j++){
+            if(i < DIM_I){
+                if( (rand() & 0x3f) == 0 ){
+                    SparseRow.push_back(Eigen::Triplet<int16_t>(i, j, i * DIM + j));
+                    CondenseRow0.push_back(Eigen::Triplet<int16_t>(i, j, i * DIM + j));
+                }
+            }else{
+                if( (rand() & 0x3ff) == 0 ){
+                    SparseRow.push_back(Eigen::Triplet<int16_t>(i, j, i * DIM + j));
+                    CondenseRow1.push_back(Eigen::Triplet<int16_t>(i, j, i * DIM + j));
+                }
+            }
+        }
+    }
+
+    SparseM0.setFromTriplets(SparseCol.begin(), SparseCol.end());
+    SparseM1.setFromTriplets(SparseRow.begin(), SparseRow.end());
+
+    CondenseM00.setFromTriplets(CondenseCol0.begin(), CondenseCol0.end());
+    CondenseM01.setFromTriplets(CondenseCol1.begin(), CondenseCol1.end());
+    CondenseM10.setFromTriplets(CondenseRow0.begin(), CondenseRow0.end());
+    CondenseM11.setFromTriplets(CondenseRow1.begin(), CondenseRow1.end());
+
+    printf("non-zeros: %d, %d\n", SparseM0.nonZeros(), SparseM1.nonZeros());
+
+    // for(int i = 0; i < CondenseM00.outerSize(); i++){
+    //     if(CondenseM00.innerVector(i).nonZeros() > 32){
+    //         printf("%d: %d\n", i, CondenseM00.innerVector(i).nonZeros());
     //     }
     // }
-
-    // SparseM0.setFromTriplets(SparseCoeffs.begin(), SparseCoeffs.end());
-    // SparseM1.setFromTriplets(SparseCoeffs.begin(), SparseCoeffs.end());
-
-    // printf("%d non-zeros\n", SparseM0.nonZeros());
 
     for(size_t i = 0; i < DIM_I; i++){
         for(size_t j = 0; j < DIM_J; j++){
@@ -129,13 +178,58 @@ int main(void){
     }
 #endif
 
-    // start = rdtsc();
-    // for(size_t i = 0; i < 16; i++){
-    //     SparseM += SparseM0 * SparseM1;
-    // }
-    // end = rdtsc();
-    // ns = (end - start);
-    // printf("Eigen Sparse cycles:\n%lld\n", ns);
+    start = rdtsc();
+    for(size_t i = 0; i < 16; i++){
+        SparseM += SparseM0 * SparseM1;
+    }
+    end = rdtsc();
+    ns = (end - start);
+    printf("Eigen Sparse cycles:\n%lld\n", ns);
+
+    start = rdtsc();
+    for(size_t i = 0; i < 16; i++){
+        CondenseM += CondenseM00 * CondenseM10;
+    }
+    end = rdtsc();
+    ns = (end - start);
+    printf("Eigen Condensed Sparse cycles:\n%lld\n", ns);
+    printf("%d non-zeros\n", CondenseM.nonZeros());
+
+    start = rdtsc();
+    for(size_t i = 0; i < 16; i++){
+        CondenseM += CondenseM01 * CondenseM11;
+    }
+    end = rdtsc();
+    ns = (end - start);
+    printf("Eigen Sparse Sparse cycles:\n%lld\n", ns);
+
+    printf("%d, %d\n", SparseM.nonZeros(), CondenseM.nonZeros());
+
+#ifdef TEST
+    assert(SparseM.nonZeros() == CondenseM.nonZeros());
+
+    for(int i = 0; i < SparseM.outerSize(); ++i){
+        for(Eigen::SparseMatrix<int16_t>::InnerIterator iter(SparseM, i); iter; ++iter){
+            buff0.push_back(iter.col());
+            buff0.push_back(iter.row());
+            buff0.push_back(iter.value());
+        }
+    }
+
+    for(int i = 0; i < CondenseM.outerSize(); ++i){
+        for(Eigen::SparseMatrix<int16_t>::InnerIterator iter(CondenseM, i); iter; ++iter){
+            buff1.push_back(iter.col());
+            buff1.push_back(iter.row());
+            buff1.push_back(iter.value());
+        }
+    }
+
+    for(size_t i = 0; i < SparseM.nonZeros() * 3; i++){
+        assert(buff0[i] == buff1[i]);
+    }
+#endif
+
+
 
 }
 
