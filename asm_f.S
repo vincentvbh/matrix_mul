@@ -45,7 +45,7 @@ _ikj_matmul_asm:
 //    for(size_t i = 0; i < DIM_I; i++){
 //        for(size_t k = 0; k < DIM_K; k++){
 //            for(size_t j = 0; j < DIM_J; j++){
-//                M1[i][j] += M0[i][k] * M0[k][j];
+//                des[i][j] += src1[i][k] * src2[k][j];
 //            }
 //        }
 //    }
@@ -317,6 +317,81 @@ _ikj_matmul_asm:
     cbnz w8, _loopi
 
 // ================
+
+
+    pop_all
+
+    br lr
+
+.align 8
+.global ijk_matmul_asm
+.global _ijk_matmul_asm
+ijk_matmul_asm:
+_ijk_matmul_asm:
+
+    push_all
+
+//    for(size_t i = 0; i < DIM_I; i++){
+//        for(size_t j = 0; j < DIM_J; j++){
+//            for(size_t k = 0; k < DIM_K; k++){
+//                des[i][j] += src1[i][k] * src2[k][j];
+//            }
+//        }
+//    }
+
+    ldr w4, [x3, #0]
+    ldr w5, [x3, #4]
+    ldr w6, [x3, #8]
+
+    mov w8, w4
+    _ijk_loopi:
+
+    mov w9, w6
+    _ijk_loopj:
+
+    ldr q0, [x0]
+
+    mov w10, w5
+    _ijk_loopk:
+
+    ldrsh w21, [x1]
+
+    mov v12.H[0], w21
+    ldr q20, [x2]
+
+    mla v0.8H, v20.8H, v12.H[0]
+
+    add x1, x1, #2
+    lsl w12, w6, #1
+    add x2, x2, x12
+
+    sub w10, w10, #1
+    cbnz w10, _ijk_loopk
+
+    str q0, [x0]
+
+    lsl w12, w5, #1
+    sub x1, x1, x12
+
+    mul w12, w6, w5
+    lsl w12, w12, #1
+    sub x2, x2, x12
+
+    add x0, x0, #16
+    add x2, x2, #16
+
+    sub w9, w9, #8
+    cbnz w9, _ijk_loopj
+
+    lsl w12, w6, #1
+    sub x2, x2, x12
+
+    lsl w12, w6, #1
+    add x1, x1, x12
+
+    sub w8, w8, #1
+    cbnz w8, _ijk_loopi
+
 
 
     pop_all

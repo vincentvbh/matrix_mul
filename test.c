@@ -37,6 +37,9 @@ struct dimension matrix_dim;
 #ifdef ASM
 extern "C" void ikj_matmul_asm(int16_t*, int16_t*, int16_t*, struct dimension*);
 extern void ikj_matmul_asm(int16_t*, int16_t*, int16_t*, struct dimension*);
+
+extern "C" void ijk_matmul_asm(int16_t*, int16_t*, int16_t*, struct dimension*);
+extern void ijk_matmul_asm(int16_t*, int16_t*, int16_t*, struct dimension*);
 #endif
 
 void Strassen_square_matmul(
@@ -67,6 +70,8 @@ int main(void){
     int16_t A0[SQUARE_DIM][SQUARE_DIM];
     int16_t A1[SQUARE_DIM][SQUARE_DIM];
 
+    int16_t N[SQUARE_DIM][SQUARE_DIM];
+
     int16_t Strassen_res[SQUARE_DIM][SQUARE_DIM];
     int16_t Strassen_Winograd_res[SQUARE_DIM][SQUARE_DIM];
 
@@ -91,7 +96,7 @@ int main(void){
 
     for(size_t i = 0; i < SQUARE_DIM; i++){
         for(size_t j = 0; j < SQUARE_DIM; j++){
-            A[i][j] = 0;
+            N[i][j] = A[i][j] = 0;
         }
     }
 
@@ -200,6 +205,25 @@ int main(void){
             if(A[i][j] != Strassen_Winograd_res[i][j]){
                 fprintf(stderr, "%4zu, %4zu: %8d, %8d\n", i, j,
                     A[i][j], Strassen_Winograd_res[i][j]);
+            }
+        }
+    }
+#endif
+
+    start = rdtsc();
+    for(size_t i = 0; i < 16; i++){
+        ijk_matmul_asm(&N[0][0], &A0[0][0], &A1[0][0], &matrix_dim);
+    }
+    end = rdtsc();
+    ns = (end - start);
+    printf("ijk SIMD asm Dense cycles:\n%lld\n", ns);
+
+#ifdef TEST
+    for(size_t i = 0; i < SQUARE_DIM; i++){
+        for(size_t j = 0; j < SQUARE_DIM; j++){
+            if(A[i][j] != N[i][j]){
+                fprintf(stderr, "%4zu, %4zu: %8d, %8d\n", i, j,
+                    A[i][j], N[i][j]);
             }
         }
     }
