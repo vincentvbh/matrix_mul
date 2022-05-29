@@ -1,7 +1,5 @@
 
 
-//#include "params.h"
-
 .macro push_all
 
     sub sp, sp, #(16*9)
@@ -40,6 +38,7 @@
 ikj_matmul_asm:
 _ikj_matmul_asm:
 
+    //br lr
 
     push_all
 
