@@ -603,12 +603,11 @@ void Strassen_Winograd_square_matmul(
     int16_t T2[SQUARE_DIM / 2][SQUARE_DIM / 2];
     int16_t T3[SQUARE_DIM / 2][SQUARE_DIM / 2];
 
-    int16_t M1[SQUARE_DIM / 2][SQUARE_DIM / 2];
     int16_t M3[SQUARE_DIM / 2][SQUARE_DIM / 2];
 
     for(size_t i = 0; i < dim; i++){
         for(size_t j = 0; j < dim; j++){
-            M1[i][j] = 0;
+            M3[i][j] = 0;
         }
     }
 
@@ -617,8 +616,8 @@ void Strassen_Winograd_square_matmul(
 
 
     // A00 * B00
-    ikj_matmul_asm(&M1[0][0], Strassen_A00, Strassen_B00, &matrix_dim);
-    matrix_add(Strassen_C00, Strassen_C00, &M1[0][0], dim, dim);
+    ikj_matmul_asm(&M3[0][0], Strassen_A00, Strassen_B00, &matrix_dim);
+    matrix_add(Strassen_C00, Strassen_C00, &M3[0][0], dim, dim);
 
     // A10 - A00
     matrix_sub(&T0[0][0], Strassen_A10, Strassen_A00, dim, dim);
@@ -630,12 +629,10 @@ void Strassen_Winograd_square_matmul(
     // B00 + B11 - B01
     matrix_sub(&T3[0][0], Strassen_B00, &T1[0][0], dim, dim);
     // A00 * B00 + (A10 + A11 - A00) * (B00 + B11 - B01)
-    ikj_matmul_asm(&M1[0][0], &T2[0][0], &T3[0][0], &matrix_dim);
-    for(size_t i = 0; i < dim; i++){
-        for(size_t j = 0; j < dim; j++){
-            M3[i][j] = M1[i][j];
-        }
-    }
+    ikj_matmul_asm(&M3[0][0], &T2[0][0], &T3[0][0], &matrix_dim);
+
+
+    matrix_add(Strassen_C01, Strassen_C01, &M3[0][0], dim, dim);
     // A00 * B00 + (A10 + A11 - A00) * (B00 + B11 - B01) + (A10 - A00) * (B01 - B11)
     // =
     // A00 * (B00 - B00 - B11 + B01 - B01 + B11) +
@@ -660,6 +657,8 @@ void Strassen_Winograd_square_matmul(
     // A00 + A01 - A10 - A11
     matrix_sub_negacc(&T0[0][0], Strassen_A01, Strassen_A11, dim, dim);
 
+
+
     // A00 * B00 + (A10 + A11 - A00) * (B00 + B11 - B01) + (A00 + A01 - A10 - A11) * B11
     // =
     // A00 * (B00 - B00 - B11 + B01 + B11) +
@@ -668,10 +667,11 @@ void Strassen_Winograd_square_matmul(
     // A11 * (B00 + B11 - B01 - B11)
     // =
     // A00 * B01 + A01 * B11 + A10 * (B00 - B01) + A11 * (B00 - B01)
-    ikj_matmul_asm(&M1[0][0], &T0[0][0], Strassen_B11, &matrix_dim);
+    ikj_matmul_asm(Strassen_C01, &T0[0][0], Strassen_B11, &matrix_dim);
 
     matrix_add(&T2[0][0], Strassen_A10, Strassen_A11, dim, dim);
     matrix_sub(&T3[0][0], Strassen_B01, Strassen_B00, dim, dim);
+
     for(size_t i = 0; i < dim; i++){
         for(size_t j = 0; j < dim; j++){
             T0[i][j] = 0;
@@ -684,7 +684,7 @@ void Strassen_Winograd_square_matmul(
     // (A10 + A11) * (B01 - B00)
     // =
     // A00 * B01 + A01 * B11
-    matrix_add_acc(Strassen_C01, &M1[0][0], &T0[0][0], dim, dim);
+    matrix_add(Strassen_C01, Strassen_C01, &T0[0][0], dim, dim);
 
     // A10 * B00 + A11 * (B00 + B11 - B01) + (A10 + A11) * (B01 - B00)
     // =

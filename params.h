@@ -5,7 +5,7 @@
 #define DENSE_DIM 120
 
 // multiple of 48
-#define SQUARE_DIM (48*3)
+#define SQUARE_DIM (48*11)
 
 
 // multiple of 12
