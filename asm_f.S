@@ -349,26 +349,201 @@ _ijk_matmul_asm:
     mov w9, w6
     _ijk_loopj:
 
-    ldr q0, [x0]
+    lsl w12, w6, #1
+    add x25, x0, x12
+    add x26, x25, x12
+    add x27, x26, x12
+
+    ldr q20, [x0]
+    ldr q21, [x25]
+    ldr q22, [x26]
+    ldr q23, [x27]
+
+    lsl w12, w6, #3
+    ldr q24, [x0, x12]
+    ldr q25, [x25, x12]
+    ldr q26, [x26, x12]
+    ldr q27, [x27, x12]
+
+    lsl w12, w6, #4
+    ldr q28, [x0, x12]
+    ldr q29, [x25, x12]
+    ldr q30, [x26, x12]
+    ldr q31, [x27, x12]
 
     mov w10, w5
     _ijk_loopk:
 
-    ldrsh w21, [x1]
+    lsl w12, w5, #1
 
-    mov v12.H[0], w21
-    ldr q20, [x2]
+    add x21, x1, x12
+    add x22, x21, x12
+    add x23, x22, x12
 
-    mla v0.8H, v20.8H, v12.H[0]
+    ldr q0, [x1]
+    ldr q1, [x21]
+    ldr q2, [x22]
+    ldr q3, [x23]
 
-    add x1, x1, #2
-    lsl w12, w6, #1
+    lsl w12, w5, #3
+    ldr q4, [x1, x12]
+    ldr q5, [x21, x12]
+    ldr q6, [x22, x12]
+    ldr q7, [x23, x12]
+
+    lsl w12, w5, #4
+    ldr q8, [x1, x12]
+    ldr q9, [x21, x12]
+    ldr q10, [x22, x12]
+    ldr q11, [x23, x12]
+
+    lsl w12, w5, #1
+    add x25, x2, x12
+    add x26, x25, x12
+    add x27, x26, x12
+    ldr q12, [x2]
+    ldr q13, [x25]
+    ldr q14, [x26]
+    ldr q15, [x27]
+
+    mla v20.8H, v12.8H, v0.H[0]
+    mla v21.8H, v12.8H, v1.H[0]
+    mla v22.8H, v12.8H, v2.H[0]
+    mla v23.8H, v12.8H, v3.H[0]
+    mla v24.8H, v12.8H, v4.H[0]
+    mla v25.8H, v12.8H, v5.H[0]
+    mla v26.8H, v12.8H, v6.H[0]
+    mla v27.8H, v12.8H, v7.H[0]
+    mla v28.8H, v12.8H, v8.H[0]
+    mla v29.8H, v12.8H, v9.H[0]
+    mla v30.8H, v12.8H, v10.H[0]
+    mla v31.8H, v12.8H, v11.H[0]
+
+    mla v20.8H, v13.8H, v0.H[1]
+    mla v21.8H, v13.8H, v1.H[1]
+    mla v22.8H, v13.8H, v2.H[1]
+    mla v23.8H, v13.8H, v3.H[1]
+    mla v24.8H, v13.8H, v4.H[1]
+    mla v25.8H, v13.8H, v5.H[1]
+    mla v26.8H, v13.8H, v6.H[1]
+    mla v27.8H, v13.8H, v7.H[1]
+    mla v28.8H, v13.8H, v8.H[1]
+    mla v29.8H, v13.8H, v9.H[1]
+    mla v30.8H, v13.8H, v10.H[1]
+    mla v31.8H, v13.8H, v11.H[1]
+
+    lsl w12, w5, #3
+    ldr q16, [x2, x12]
+    ldr q17, [x25, x12]
+    ldr q18, [x26, x12]
+    ldr q19, [x27, x12]
+
+    mla v20.8H, v14.8H, v0.H[2]
+    mla v21.8H, v14.8H, v1.H[2]
+    mla v22.8H, v14.8H, v2.H[2]
+    mla v23.8H, v14.8H, v3.H[2]
+    mla v24.8H, v14.8H, v4.H[2]
+    mla v25.8H, v14.8H, v5.H[2]
+    mla v26.8H, v14.8H, v6.H[2]
+    mla v27.8H, v14.8H, v7.H[2]
+    mla v28.8H, v14.8H, v8.H[2]
+    mla v29.8H, v14.8H, v9.H[2]
+    mla v30.8H, v14.8H, v10.H[2]
+    mla v31.8H, v14.8H, v11.H[2]
+
+    mla v20.8H, v15.8H, v0.H[3]
+    mla v21.8H, v15.8H, v1.H[3]
+    mla v22.8H, v15.8H, v2.H[3]
+    mla v23.8H, v15.8H, v3.H[3]
+    mla v24.8H, v15.8H, v4.H[3]
+    mla v25.8H, v15.8H, v5.H[3]
+    mla v26.8H, v15.8H, v6.H[3]
+    mla v27.8H, v15.8H, v7.H[3]
+    mla v28.8H, v15.8H, v8.H[3]
+    mla v29.8H, v15.8H, v9.H[3]
+    mla v30.8H, v15.8H, v10.H[3]
+    mla v31.8H, v15.8H, v11.H[3]
+
+    mla v20.8H, v16.8H, v0.H[4]
+    mla v21.8H, v16.8H, v1.H[4]
+    mla v22.8H, v16.8H, v2.H[4]
+    mla v23.8H, v16.8H, v3.H[4]
+    mla v24.8H, v16.8H, v4.H[4]
+    mla v25.8H, v16.8H, v5.H[4]
+    mla v26.8H, v16.8H, v6.H[4]
+    mla v27.8H, v16.8H, v7.H[4]
+    mla v28.8H, v16.8H, v8.H[4]
+    mla v29.8H, v16.8H, v9.H[4]
+    mla v30.8H, v16.8H, v10.H[4]
+    mla v31.8H, v16.8H, v11.H[4]
+
+    mla v20.8H, v17.8H, v0.H[5]
+    mla v21.8H, v17.8H, v1.H[5]
+    mla v22.8H, v17.8H, v2.H[5]
+    mla v23.8H, v17.8H, v3.H[5]
+    mla v24.8H, v17.8H, v4.H[5]
+    mla v25.8H, v17.8H, v5.H[5]
+    mla v26.8H, v17.8H, v6.H[5]
+    mla v27.8H, v17.8H, v7.H[5]
+    mla v28.8H, v17.8H, v8.H[5]
+    mla v29.8H, v17.8H, v9.H[5]
+    mla v30.8H, v17.8H, v10.H[5]
+    mla v31.8H, v17.8H, v11.H[5]
+
+    mla v20.8H, v18.8H, v0.H[6]
+    mla v21.8H, v18.8H, v1.H[6]
+    mla v22.8H, v18.8H, v2.H[6]
+    mla v23.8H, v18.8H, v3.H[6]
+    mla v24.8H, v18.8H, v4.H[6]
+    mla v25.8H, v18.8H, v5.H[6]
+    mla v26.8H, v18.8H, v6.H[6]
+    mla v27.8H, v18.8H, v7.H[6]
+    mla v28.8H, v18.8H, v8.H[6]
+    mla v29.8H, v18.8H, v9.H[6]
+    mla v30.8H, v18.8H, v10.H[6]
+    mla v31.8H, v18.8H, v11.H[6]
+
+    mla v20.8H, v19.8H, v0.H[7]
+    mla v21.8H, v19.8H, v1.H[7]
+    mla v22.8H, v19.8H, v2.H[7]
+    mla v23.8H, v19.8H, v3.H[7]
+    mla v24.8H, v19.8H, v4.H[7]
+    mla v25.8H, v19.8H, v5.H[7]
+    mla v26.8H, v19.8H, v6.H[7]
+    mla v27.8H, v19.8H, v7.H[7]
+    mla v28.8H, v19.8H, v8.H[7]
+    mla v29.8H, v19.8H, v9.H[7]
+    mla v30.8H, v19.8H, v10.H[7]
+    mla v31.8H, v19.8H, v11.H[7]
+
+    add x1, x1, #16
+    lsl w12, w6, #4
     add x2, x2, x12
 
-    sub w10, w10, #1
+    sub w10, w10, #8
     cbnz w10, _ijk_loopk
 
-    str q0, [x0]
+    lsl w12, w6, #1
+    add x25, x0, x12
+    add x26, x25, x12
+    add x27, x26, x12
+
+    str q20, [x0]
+    str q21, [x25]
+    str q22, [x26]
+    str q23, [x27]
+
+    lsl w12, w6, #3
+    str q24, [x0, x12]
+    str q25, [x25, x12]
+    str q26, [x26, x12]
+    str q27, [x27, x12]
+
+    lsl w12, w6, #4
+    str q28, [x0, x12]
+    str q29, [x25, x12]
+    str q30, [x26, x12]
+    str q31, [x27, x12]
 
     lsl w12, w5, #1
     sub x1, x1, x12
@@ -386,10 +561,15 @@ _ijk_matmul_asm:
     lsl w12, w6, #1
     sub x2, x2, x12
 
+
     lsl w12, w6, #1
+    sub x0, x0, x12
+    mov w13, #24
+    mul w12, w6, w13
+    add x0, x0, x12
     add x1, x1, x12
 
-    sub w8, w8, #1
+    sub w8, w8, #12
     cbnz w8, _ijk_loopi
 
 
