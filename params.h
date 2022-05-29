@@ -1,14 +1,20 @@
 #ifndef PARAMS_H
 #define PARAMS_H
 
-#define DIM 1536
+#define SPARSE_DIM 1536
+#define DENSE_DIM 120
+
+// multiple of 48
+#define SQUARE_DIM (48*2)
+
 
 // multiple of 12
-#define DIM_I 192
+#define DENSE_DIM_I (240)
 // multiple of 8
-#define DIM_K 192
+#define DENSE_DIM_K (120)
 // multiple of 8
-#define DIM_J 192
+#define DENSE_DIM_J (120)
+
 
 
 #endif
