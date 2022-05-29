@@ -23,6 +23,10 @@
 
 #define EXPN 128
 
+void matrix_add(int16_t *des, int16_t *src1, int16_t *src2, size_t, size_t);
+void matrix_sub(int16_t *des, int16_t *src1, int16_t *src2, size_t, size_t);
+
+
 void ijk_exp(int16_t A[DIM][DIM], size_t expn);
 void kij_exp(int16_t A[DIM][DIM], size_t expn);
 void ikj_exp(int16_t A[DIM][DIM], size_t expn);
@@ -42,6 +46,12 @@ extern "C" void ikj_matmul_asm(int16_t*, int16_t*, int16_t*, struct dimension*);
 extern void ikj_matmul_asm(int16_t*, int16_t*, int16_t*, struct dimension*);
 #endif
 
+void Strassen_square_matmul(
+    int16_t*, int16_t*, int16_t*, int16_t*,
+    int16_t*, int16_t*, int16_t*, int16_t*,
+    int16_t*, int16_t*, int16_t*, int16_t*,
+    size_t);
+
 int main(void){
 
     long long start, end;
@@ -57,6 +67,22 @@ int main(void){
     int16_t A[DIM_I][DIM_J];
     int16_t A0[DIM_I][DIM_K];
     int16_t A1[DIM_K][DIM_J];
+
+    int16_t Strassen_res[DIM_I][DIM_I];
+
+    int16_t Strassen_A00[DIM_I / 2][DIM_I / 2];
+    int16_t Strassen_A01[DIM_I / 2][DIM_I / 2];
+    int16_t Strassen_A10[DIM_I / 2][DIM_I / 2];
+    int16_t Strassen_A11[DIM_I / 2][DIM_I / 2];
+    int16_t Strassen_B00[DIM_I / 2][DIM_I / 2];
+    int16_t Strassen_B01[DIM_I / 2][DIM_I / 2];
+    int16_t Strassen_B10[DIM_I / 2][DIM_I / 2];
+    int16_t Strassen_B11[DIM_I / 2][DIM_I / 2];
+    int16_t Strassen_C00[DIM_I / 2][DIM_I / 2];
+    int16_t Strassen_C01[DIM_I / 2][DIM_I / 2];
+    int16_t Strassen_C10[DIM_I / 2][DIM_I / 2];
+    int16_t Strassen_C11[DIM_I / 2][DIM_I / 2];
+
 
     Eigen::Matrix<int16_t, DIM_I, DIM_J> M;
     Eigen::Matrix<int16_t, DIM_I, DIM_K> M0 = Eigen::Matrix<int16_t, DIM_I, DIM_K>::Random();
@@ -123,12 +149,6 @@ int main(void){
 
     printf("non-zeros: %d, %d\n", SparseM0.nonZeros(), SparseM1.nonZeros());
 
-    // for(int i = 0; i < CondenseM00.outerSize(); i++){
-    //     if(CondenseM00.innerVector(i).nonZeros() > 32){
-    //         printf("%d: %d\n", i, CondenseM00.innerVector(i).nonZeros());
-    //     }
-    // }
-
     for(size_t i = 0; i < DIM_I; i++){
         for(size_t j = 0; j < DIM_J; j++){
             A[i][j] = M(i, j) = 0;
@@ -147,12 +167,29 @@ int main(void){
         }
     }
 
+// Strassen, version requires DIM_K = DIM_J = DIM_I, will adapt later
+
+    for(size_t i = 0; i < DIM_I / 2; i++){
+        for(size_t j = 0; j < DIM_I / 2; j++){
+            Strassen_A00[i][j] = A0[i              ][j              ];
+            Strassen_A01[i][j] = A0[i              ][j + (DIM_I / 2)];
+            Strassen_A10[i][j] = A0[i + (DIM_I / 2)][j              ];
+            Strassen_A11[i][j] = A0[i + (DIM_I / 2)][j + (DIM_I / 2)];
+
+            Strassen_B00[i][j] = A1[i              ][j              ];
+            Strassen_B01[i][j] = A1[i              ][j + (DIM_I / 2)];
+            Strassen_B10[i][j] = A1[i + (DIM_I / 2)][j              ];
+            Strassen_B11[i][j] = A1[i + (DIM_I / 2)][j + (DIM_I / 2)];
+
+        }
+    }
+
     printf("start\n");
 
     setup_rdtsc();
 
     start = rdtsc();
-    for(size_t i = 0; i < 16; i++){
+    for(size_t i = 0; i < 1; i++){
         ikj_matmul_asm(&A[0][0], &A0[0][0], &A1[0][0], &matrix_dim);
     }
     end = rdtsc();
@@ -160,7 +197,7 @@ int main(void){
     printf("ikj SIMD asm Dense cycles:\n%lld\n", ns);
 
     start = rdtsc();
-    for(size_t i = 0; i < 16; i++){
+    for(size_t i = 0; i < 1; i++){
         M += M0 * M1;
     }
     end = rdtsc();
@@ -177,6 +214,63 @@ int main(void){
         }
     }
 #endif
+
+    start = rdtsc();
+    Strassen_square_matmul(
+        &Strassen_C00[0][0], &Strassen_C01[0][0], &Strassen_C10[0][0], &Strassen_C11[0][0],
+        &Strassen_A00[0][0], &Strassen_A01[0][0], &Strassen_A10[0][0], &Strassen_A11[0][0],
+        &Strassen_B00[0][0], &Strassen_B01[0][0], &Strassen_B10[0][0], &Strassen_B11[0][0],
+        DIM_I / 2
+        );
+    end = rdtsc();
+    ns = (end - start);
+    printf("Strassen cycles:\n%lld\n", ns);
+
+    // printf("Strassen C01\n");
+
+    // for(size_t i = 0; i < 1; i++){
+    //     for(size_t j = 0; j < DIM_I / 2; j++){
+    //         printf("%4zu, %4zu: %d\n", i, j, Strassen_C01[i][j]);
+    //     }
+    // }
+
+    for(size_t i = 0; i < DIM_I / 2; i++){
+        for(size_t j = 0; j < DIM_I / 2; j++){
+            Strassen_res[i              ][j              ] = Strassen_C00[i][j];
+            Strassen_res[i              ][j + (DIM_I / 2)] = Strassen_C01[i][j];
+            Strassen_res[i + (DIM_I / 2)][j              ] = Strassen_C10[i][j];
+            Strassen_res[i + (DIM_I / 2)][j + (DIM_I / 2)] = Strassen_C11[i][j];
+        }
+    }
+
+    // printf("Copied\n");
+
+    // for(size_t i = 0; i < 1; i++){
+    //     for(size_t j = 0; j < DIM_I / 2; j++){
+    //         printf("%4zu, %4zu: %d\n", i, j, Strassen_res[i            ][j + (DIM_I / 2)]);
+    //     }
+    // }
+
+#ifdef TEST
+
+    for(size_t i = 0; i < DIM_I; i++){
+        for(size_t j = 0; j < DIM_I; j++){
+            if(A[i][j] != Strassen_res[i][j]){
+                fprintf(stderr, "%4zu, %4zu: %8d, %8d\n", i, j,
+                    A[i][j], Strassen_res[i][j]);
+            }
+        }
+    }
+
+#endif
+
+    // start = rdtsc();
+    // for(size_t i = 0; i < 16; i++){
+    //     matrix_add(&A[0][0], &A[0][0], &A[0][0], DIM_I, DIM_J);
+    // }
+    // end = rdtsc();
+    // ns = (end - start);
+    // printf("add matrices cycles:\n%lld\n", ns);
 
     start = rdtsc();
     for(size_t i = 0; i < 16; i++){
@@ -228,6 +322,97 @@ int main(void){
         assert(buff0[i] == buff1[i]);
     }
 #endif
+
+
+
+}
+
+void matrix_add(int16_t *des, int16_t *src1, int16_t *src2, size_t dim_i, size_t dim_j){
+
+    for(size_t i = 0; i < dim_i; i++){
+        for(size_t j = 0; j < dim_j; j++){
+            des[i * dim_j + j] = src1[i * dim_j + j] + src2[i * dim_j + j];
+        }
+    }
+
+}
+
+void matrix_sub(int16_t *des, int16_t *src1, int16_t *src2, size_t dim_i, size_t dim_j){
+
+    for(size_t i = 0; i < dim_i; i++){
+        for(size_t j = 0; j < dim_j; j++){
+            des[i * dim_j + j] = src1[i * dim_j + j] - src2[i * dim_j + j];
+        }
+    }
+
+}
+
+void Strassen_square_matmul(
+    int16_t *Strassen_C00, int16_t *Strassen_C01, int16_t *Strassen_C10, int16_t *Strassen_C11,
+    int16_t *Strassen_A00, int16_t *Strassen_A01, int16_t *Strassen_A10, int16_t *Strassen_A11,
+    int16_t *Strassen_B00, int16_t *Strassen_B01, int16_t *Strassen_B10, int16_t *Strassen_B11,
+    size_t dim){
+
+    int16_t T0[DIM_I / 2][DIM_I / 2];
+    int16_t T1[DIM_I / 2][DIM_I / 2];
+    int16_t T2[DIM_I / 2][DIM_I / 2];
+    int16_t T3[DIM_I / 2][DIM_I / 2];
+
+
+    int16_t M0[DIM_I / 2][DIM_I / 2];
+    int16_t M1[DIM_I / 2][DIM_I / 2];
+    int16_t M2[DIM_I / 2][DIM_I / 2];
+    int16_t M3[DIM_I / 2][DIM_I / 2];
+    int16_t M4[DIM_I / 2][DIM_I / 2];
+    int16_t M5[DIM_I / 2][DIM_I / 2];
+    int16_t M6[DIM_I / 2][DIM_I / 2];
+
+    for(size_t i = 0; i < dim; i++){
+        for(size_t j = 0; j < dim; j++){
+            M0[i][j] = M1[i][j] = M2[i][j] = M3[i][j] = M4[i][j] = M5[i][j] = M6[i][j] = 0;
+        }
+    }
+
+    struct dimension matrix_dim;
+    matrix_dim.dim_i = matrix_dim.dim_j = matrix_dim.dim_k = dim;
+
+    matrix_add(&T0[0][0], Strassen_A00, Strassen_A11, dim, dim);
+    matrix_add(&T1[0][0], Strassen_B00, Strassen_B11, dim, dim);
+    ikj_matmul_asm(&M0[0][0], &T0[0][0], &T1[0][0], &matrix_dim);
+
+    matrix_add(&T2[0][0], Strassen_A10, Strassen_A11, dim, dim);
+    ikj_matmul_asm(&M1[0][0], &T2[0][0], Strassen_B00, &matrix_dim);
+
+    matrix_sub(&T3[0][0], Strassen_B01, Strassen_B11, dim, dim);
+    ikj_matmul_asm(&M2[0][0], Strassen_A00, &T3[0][0], &matrix_dim);
+
+    matrix_sub(&T0[0][0], Strassen_B10, Strassen_B00, dim, dim);
+    ikj_matmul_asm(&M3[0][0], Strassen_A11, &T0[0][0], &matrix_dim);
+
+    matrix_add(&T1[0][0], Strassen_A00, Strassen_A01, dim, dim);
+    ikj_matmul_asm(&M4[0][0], &T1[0][0], Strassen_B11, &matrix_dim);
+
+    matrix_sub(&T2[0][0], Strassen_A10, Strassen_A00, dim, dim);
+    matrix_add(&T3[0][0], Strassen_B00, Strassen_B01, dim, dim);
+    ikj_matmul_asm(&M5[0][0], &T2[0][0], &T3[0][0], &matrix_dim);
+
+    matrix_sub(&T0[0][0], Strassen_A01, Strassen_A11, dim, dim);
+    matrix_add(&T1[0][0], Strassen_B10, Strassen_B11, dim, dim);
+    ikj_matmul_asm(&M6[0][0], &T0[0][0], &T1[0][0], &matrix_dim);
+
+    matrix_add(&T0[0][0], &M0[0][0], &M6[0][0], dim, dim);
+    matrix_sub(&T1[0][0], &M3[0][0], &M4[0][0], dim, dim);
+    matrix_add(Strassen_C00, &T0[0][0], &T1[0][0], dim, dim);
+
+    matrix_add(Strassen_C00, &T0[0][0], &T1[0][0], dim, dim);
+
+    matrix_add(Strassen_C01, &M2[0][0], &M4[0][0], dim, dim);
+
+    matrix_add(Strassen_C10, &M1[0][0], &M3[0][0], dim, dim);
+
+    matrix_add(&T2[0][0], &M2[0][0], &M5[0][0], dim, dim);
+    matrix_sub(&T3[0][0], &M0[0][0], &M1[0][0], dim, dim);
+    matrix_add(Strassen_C11, &T2[0][0], &T3[0][0], dim, dim);
 
 
 
