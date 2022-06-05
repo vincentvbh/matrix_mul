@@ -32,7 +32,14 @@ struct dimension matrix_dim;
 #ifdef ASM
 extern "C" void ikj_matmul_asm(int16_t*, int16_t*, int16_t*, struct dimension*);
 extern void ikj_matmul_asm(int16_t*, int16_t*, int16_t*, struct dimension*);
+
+extern "C" void ijk_matmul_asm(int16_t*, int16_t*, int16_t*, struct dimension*);
+extern void ijk_matmul_asm(int16_t*, int16_t*, int16_t*, struct dimension*);
 #endif
+
+void ikj_matmul_SIMD(int16_t des[DENSE_DIM_I][DENSE_DIM_J], int16_t src1[DENSE_DIM_I][DENSE_DIM_K], int16_t src2[DENSE_DIM_K][DENSE_DIM_J]);
+void ijk_matmul_SIMD(int16_t des[DENSE_DIM_I][DENSE_DIM_J], int16_t src1[DENSE_DIM_I][DENSE_DIM_K], int16_t src2[DENSE_DIM_K][DENSE_DIM_J]);
+
 
 int main(void){
 
@@ -44,6 +51,7 @@ int main(void){
 // ================================
 // Dense settings
 
+    int16_t N[DENSE_DIM_I][DENSE_DIM_J];
     int16_t A[DENSE_DIM_I][DENSE_DIM_J];
     int16_t A0[DENSE_DIM_I][DENSE_DIM_K];
     int16_t A1[DENSE_DIM_K][DENSE_DIM_J];
@@ -55,7 +63,7 @@ int main(void){
 
     for(size_t i = 0; i < DENSE_DIM_I; i++){
         for(size_t j = 0; j < DENSE_DIM_J; j++){
-            A[i][j] = M(i, j) = 0;
+            N[i][j] = A[i][j] = M(i, j) = 0;
         }
     }
 
@@ -150,6 +158,88 @@ int main(void){
     ns = (end - start);
     printf("ikj SIMD asm Dense cycles:\n%lld\n", ns);
 
+// ================================
+
+    for(size_t i = 0; i < DENSE_DIM_I; i++){
+        for(size_t j = 0; j < DENSE_DIM_J; j++){
+            N[i][j] = 0;
+        }
+    }
+
+    start = rdtsc();
+    for(size_t i = 0; i < 16; i++){
+        ikj_matmul_SIMD(N, A0, A1);
+    }
+    end = rdtsc();
+    ns = (end - start);
+    printf("ikj SIMD intrinsics Dense cycles:\n%lld\n", ns);
+
+#ifdef TEST
+    for(size_t i = 0; i < SQUARE_DIM; i++){
+        for(size_t j = 0; j < SQUARE_DIM; j++){
+            if(A[i][j] != N[i][j]){
+                fprintf(stderr, "%4zu, %4zu: %8d, %8d\n", i, j,
+                    A[i][j], N[i][j]);
+            }
+        }
+    }
+#endif
+
+// ================================
+
+    for(size_t i = 0; i < DENSE_DIM_I; i++){
+        for(size_t j = 0; j < DENSE_DIM_J; j++){
+            N[i][j] = 0;
+        }
+    }
+
+    start = rdtsc();
+    for(size_t i = 0; i < 16; i++){
+        ijk_matmul_asm(&N[0][0], &A0[0][0], &A1[0][0], &matrix_dim);
+    }
+    end = rdtsc();
+    ns = (end - start);
+    printf("ijk SIMD asm Dense cycles:\n%lld\n", ns);
+
+#ifdef TEST
+    for(size_t i = 0; i < SQUARE_DIM; i++){
+        for(size_t j = 0; j < SQUARE_DIM; j++){
+            if(A[i][j] != N[i][j]){
+                fprintf(stderr, "%4zu, %4zu: %8d, %8d\n", i, j,
+                    A[i][j], N[i][j]);
+            }
+        }
+    }
+#endif
+
+// ================================
+
+    for(size_t i = 0; i < DENSE_DIM_I; i++){
+        for(size_t j = 0; j < DENSE_DIM_J; j++){
+            N[i][j] = 0;
+        }
+    }
+
+    start = rdtsc();
+    for(size_t i = 0; i < 16; i++){
+        ijk_matmul_SIMD(N, A0, A1);
+    }
+    end = rdtsc();
+    ns = (end - start);
+    printf("ijk SIMD intrinsics Dense cycles:\n%lld\n", ns);
+
+#ifdef TEST
+    for(size_t i = 0; i < SQUARE_DIM; i++){
+        for(size_t j = 0; j < SQUARE_DIM; j++){
+            if(A[i][j] != N[i][j]){
+                fprintf(stderr, "%4zu, %4zu: %8d, %8d\n", i, j,
+                    A[i][j], N[i][j]);
+            }
+        }
+    }
+#endif
+
+// ================================
 
     start = rdtsc();
     for(size_t i = 0; i < 16; i++){
@@ -231,15 +321,6 @@ int main(void){
 
 void ijk_matmul_SIMD(int16_t des[DENSE_DIM_I][DENSE_DIM_J], int16_t src1[DENSE_DIM_I][DENSE_DIM_K], int16_t src2[DENSE_DIM_K][DENSE_DIM_J]){
 
-        // for(size_t i = 0; i < DENSE_DIM_I; i++){
-        //     for(size_t j = 0; j < DENSE_DIM_J; j++){
-        //         M1[i][j] = 0;
-        //         for(size_t k = 0; k < DENSE_DIM_K; k++){
-        //             M1[i][j] += M0[i][k] * M0[k][j];
-        //         }
-        //     }
-        // }
-
     int16x8_t t0;
     int16x8_t t1;
     int16x8_t t2;
@@ -278,18 +359,18 @@ void ijk_matmul_SIMD(int16_t des[DENSE_DIM_I][DENSE_DIM_J], int16_t src1[DENSE_D
     for(size_t i = 0; i < DENSE_DIM_I; i += 12){
         for(size_t j = 0; j < DENSE_DIM_J; j += 8){
 
-            acc0 = vdupq_n_s16(0);
-            acc1 = vdupq_n_s16(0);
-            acc2 = vdupq_n_s16(0);
-            acc3 = vdupq_n_s16(0);
-            acc4 = vdupq_n_s16(0);
-            acc5 = vdupq_n_s16(0);
-            acc6 = vdupq_n_s16(0);
-            acc7 = vdupq_n_s16(0);
-            acc8 = vdupq_n_s16(0);
-            acc9 = vdupq_n_s16(0);
-            acc10 = vdupq_n_s16(0);
-            acc11 = vdupq_n_s16(0);
+            acc0 = vld1q_s16(&des[i + 0][j]);
+            acc1 = vld1q_s16(&des[i + 1][j]);
+            acc2 = vld1q_s16(&des[i + 2][j]);
+            acc3 = vld1q_s16(&des[i + 3][j]);
+            acc4 = vld1q_s16(&des[i + 4][j]);
+            acc5 = vld1q_s16(&des[i + 5][j]);
+            acc6 = vld1q_s16(&des[i + 6][j]);
+            acc7 = vld1q_s16(&des[i + 7][j]);
+            acc8 = vld1q_s16(&des[i + 8][j]);
+            acc9 = vld1q_s16(&des[i + 9][j]);
+            acc10 = vld1q_s16(&des[i + 10][j]);
+            acc11 = vld1q_s16(&des[i + 11][j]);
 
             for(size_t k = 0; k < DENSE_DIM_K; k += 8){
 
@@ -474,12 +555,6 @@ void ikj_matmul_SIMD(int16_t des[DENSE_DIM_I][DENSE_DIM_J], int16_t src1[DENSE_D
     int16x8_t v5;
     int16x8_t v6;
     int16x8_t v7;
-
-    for(size_t i = 0; i < DENSE_DIM_I; i++){
-        for(size_t j = 0; j < DENSE_DIM_J; j++){
-            des[i][j] = 0;
-        }
-    }
 
 #if defined(BLOCK4)
     for(size_t i = 0; i < DENSE_DIM_I; i += 4){

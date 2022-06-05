@@ -11,9 +11,9 @@
 // multiple of 12
 #define DENSE_DIM_I (240)
 // multiple of 8
-#define DENSE_DIM_K (120)
+#define DENSE_DIM_K (240)
 // multiple of 8
-#define DENSE_DIM_J (120)
+#define DENSE_DIM_J (240)
 
 
 
