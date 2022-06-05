@@ -118,20 +118,22 @@ int main(void){
             Strassen_Winograd_C00[i][j] = Strassen_Winograd_C01[i][j] = Strassen_Winograd_C10[i][j] = Strassen_Winograd_C11[i][j] = 0;
 
 
-            Strassen_A00[i][j] = A0[i              ][j              ];
-            Strassen_A01[i][j] = A0[i              ][j + (SQUARE_DIM / 2)];
-            Strassen_A10[i][j] = A0[i + (SQUARE_DIM / 2)][j              ];
+            Strassen_A00[i][j] = A0[i                   ][j                   ];
+            Strassen_A01[i][j] = A0[i                   ][j + (SQUARE_DIM / 2)];
+            Strassen_A10[i][j] = A0[i + (SQUARE_DIM / 2)][j                   ];
             Strassen_A11[i][j] = A0[i + (SQUARE_DIM / 2)][j + (SQUARE_DIM / 2)];
 
-            Strassen_B00[i][j] = A1[i              ][j              ];
-            Strassen_B01[i][j] = A1[i              ][j + (SQUARE_DIM / 2)];
-            Strassen_B10[i][j] = A1[i + (SQUARE_DIM / 2)][j              ];
+            Strassen_B00[i][j] = A1[i                   ][j                   ];
+            Strassen_B01[i][j] = A1[i                   ][j + (SQUARE_DIM / 2)];
+            Strassen_B10[i][j] = A1[i + (SQUARE_DIM / 2)][j                   ];
             Strassen_B11[i][j] = A1[i + (SQUARE_DIM / 2)][j + (SQUARE_DIM / 2)];
 
         }
     }
 
     printf("start\n");
+
+// ================================
 
     setup_rdtsc();
 
@@ -143,72 +145,7 @@ int main(void){
     ns = (end - start);
     printf("ikj SIMD asm Dense cycles:\n%lld\n", ns);
 
-
-    start = rdtsc();
-    for(size_t i = 0; i < 16; i++){
-        Strassen_square_matmul(
-            &Strassen_C00[0][0], &Strassen_C01[0][0], &Strassen_C10[0][0], &Strassen_C11[0][0],
-            &Strassen_A00[0][0], &Strassen_A01[0][0], &Strassen_A10[0][0], &Strassen_A11[0][0],
-            &Strassen_B00[0][0], &Strassen_B01[0][0], &Strassen_B10[0][0], &Strassen_B11[0][0],
-            SQUARE_DIM / 2
-            );
-    }
-    end = rdtsc();
-    ns = (end - start);
-    printf("Strassen cycles:\n%lld\n", ns);
-
-    for(size_t i = 0; i < SQUARE_DIM / 2; i++){
-        for(size_t j = 0; j < SQUARE_DIM / 2; j++){
-            Strassen_res[i              ][j              ] = Strassen_C00[i][j];
-            Strassen_res[i              ][j + (SQUARE_DIM / 2)] = Strassen_C01[i][j];
-            Strassen_res[i + (SQUARE_DIM / 2)][j              ] = Strassen_C10[i][j];
-            Strassen_res[i + (SQUARE_DIM / 2)][j + (SQUARE_DIM / 2)] = Strassen_C11[i][j];
-        }
-    }
-
-#ifdef TEST
-    for(size_t i = 0; i < SQUARE_DIM; i++){
-        for(size_t j = 0; j < SQUARE_DIM; j++){
-            if(A[i][j] != Strassen_res[i][j]){
-                fprintf(stderr, "%4zu, %4zu: %8d, %8d\n", i, j,
-                    A[i][j], Strassen_res[i][j]);
-            }
-        }
-    }
-#endif
-
-    start = rdtsc();
-    for(size_t i = 0; i < 16; i++){
-        Strassen_Winograd_square_matmul(
-            &Strassen_Winograd_C00[0][0], &Strassen_Winograd_C01[0][0], &Strassen_Winograd_C10[0][0], &Strassen_Winograd_C11[0][0],
-            &Strassen_A00[0][0], &Strassen_A01[0][0], &Strassen_A10[0][0], &Strassen_A11[0][0],
-            &Strassen_B00[0][0], &Strassen_B01[0][0], &Strassen_B10[0][0], &Strassen_B11[0][0],
-            SQUARE_DIM / 2
-            );
-    }
-    end = rdtsc();
-    ns = (end - start);
-    printf("Strassen_Winograd cycles:\n%lld\n", ns);
-
-    for(size_t i = 0; i < SQUARE_DIM / 2; i++){
-        for(size_t j = 0; j < SQUARE_DIM / 2; j++){
-            Strassen_Winograd_res[i              ][j              ] = Strassen_Winograd_C00[i][j];
-            Strassen_Winograd_res[i              ][j + (SQUARE_DIM / 2)] = Strassen_Winograd_C01[i][j];
-            Strassen_Winograd_res[i + (SQUARE_DIM / 2)][j              ] = Strassen_Winograd_C10[i][j];
-            Strassen_Winograd_res[i + (SQUARE_DIM / 2)][j + (SQUARE_DIM / 2)] = Strassen_Winograd_C11[i][j];
-        }
-    }
-
-#ifdef TEST
-    for(size_t i = 0; i < SQUARE_DIM; i++){
-        for(size_t j = 0; j < SQUARE_DIM; j++){
-            if(A[i][j] != Strassen_Winograd_res[i][j]){
-                fprintf(stderr, "%4zu, %4zu: %8d, %8d\n", i, j,
-                    A[i][j], Strassen_Winograd_res[i][j]);
-            }
-        }
-    }
-#endif
+// ================================
 
     start = rdtsc();
     for(size_t i = 0; i < 16; i++){
@@ -228,6 +165,102 @@ int main(void){
         }
     }
 #endif
+
+// ================================
+
+    start = rdtsc();
+    for(size_t iter = 0; iter < 16; iter++){
+    for(size_t i = 0; i < SQUARE_DIM / 2; i++){
+        for(size_t j = 0; j < SQUARE_DIM / 2; j++){
+
+            Strassen_A00[i][j] = A0[i                   ][j                   ];
+            Strassen_A01[i][j] = A0[i                   ][j + (SQUARE_DIM / 2)];
+            Strassen_A10[i][j] = A0[i + (SQUARE_DIM / 2)][j                   ];
+            Strassen_A11[i][j] = A0[i + (SQUARE_DIM / 2)][j + (SQUARE_DIM / 2)];
+
+            Strassen_B00[i][j] = A1[i                   ][j                   ];
+            Strassen_B01[i][j] = A1[i                   ][j + (SQUARE_DIM / 2)];
+            Strassen_B10[i][j] = A1[i + (SQUARE_DIM / 2)][j                   ];
+            Strassen_B11[i][j] = A1[i + (SQUARE_DIM / 2)][j + (SQUARE_DIM / 2)];
+
+        }
+    }
+    }
+    end = rdtsc();
+    ns = (end - start);
+    printf("preprocessing cycles:\n%lld\n", ns);
+
+// ================================
+
+    start = rdtsc();
+    for(size_t i = 0; i < 16; i++){
+        Strassen_square_matmul(
+            &Strassen_C00[0][0], &Strassen_C01[0][0], &Strassen_C10[0][0], &Strassen_C11[0][0],
+            &Strassen_A00[0][0], &Strassen_A01[0][0], &Strassen_A10[0][0], &Strassen_A11[0][0],
+            &Strassen_B00[0][0], &Strassen_B01[0][0], &Strassen_B10[0][0], &Strassen_B11[0][0],
+            SQUARE_DIM / 2
+            );
+    }
+    end = rdtsc();
+    ns = (end - start);
+    printf("Strassen cycles:\n%lld\n", ns);
+
+    for(size_t i = 0; i < SQUARE_DIM / 2; i++){
+        for(size_t j = 0; j < SQUARE_DIM / 2; j++){
+            Strassen_res[i                   ][j                   ] = Strassen_C00[i][j];
+            Strassen_res[i                   ][j + (SQUARE_DIM / 2)] = Strassen_C01[i][j];
+            Strassen_res[i + (SQUARE_DIM / 2)][j                   ] = Strassen_C10[i][j];
+            Strassen_res[i + (SQUARE_DIM / 2)][j + (SQUARE_DIM / 2)] = Strassen_C11[i][j];
+        }
+    }
+
+#ifdef TEST
+    for(size_t i = 0; i < SQUARE_DIM; i++){
+        for(size_t j = 0; j < SQUARE_DIM; j++){
+            if(A[i][j] != Strassen_res[i][j]){
+                fprintf(stderr, "%4zu, %4zu: %8d, %8d\n", i, j,
+                    A[i][j], Strassen_res[i][j]);
+            }
+        }
+    }
+#endif
+
+// ================================
+
+    start = rdtsc();
+    for(size_t i = 0; i < 16; i++){
+        Strassen_Winograd_square_matmul(
+            &Strassen_Winograd_C00[0][0], &Strassen_Winograd_C01[0][0], &Strassen_Winograd_C10[0][0], &Strassen_Winograd_C11[0][0],
+            &Strassen_A00[0][0], &Strassen_A01[0][0], &Strassen_A10[0][0], &Strassen_A11[0][0],
+            &Strassen_B00[0][0], &Strassen_B01[0][0], &Strassen_B10[0][0], &Strassen_B11[0][0],
+            SQUARE_DIM / 2
+            );
+    }
+    end = rdtsc();
+    ns = (end - start);
+    printf("Strassen_Winograd cycles:\n%lld\n", ns);
+
+    for(size_t i = 0; i < SQUARE_DIM / 2; i++){
+        for(size_t j = 0; j < SQUARE_DIM / 2; j++){
+            Strassen_Winograd_res[i                   ][j                   ] = Strassen_Winograd_C00[i][j];
+            Strassen_Winograd_res[i                   ][j + (SQUARE_DIM / 2)] = Strassen_Winograd_C01[i][j];
+            Strassen_Winograd_res[i + (SQUARE_DIM / 2)][j                   ] = Strassen_Winograd_C10[i][j];
+            Strassen_Winograd_res[i + (SQUARE_DIM / 2)][j + (SQUARE_DIM / 2)] = Strassen_Winograd_C11[i][j];
+        }
+    }
+
+#ifdef TEST
+    for(size_t i = 0; i < SQUARE_DIM; i++){
+        for(size_t j = 0; j < SQUARE_DIM; j++){
+            if(A[i][j] != Strassen_Winograd_res[i][j]){
+                fprintf(stderr, "%4zu, %4zu: %8d, %8d\n", i, j,
+                    A[i][j], Strassen_Winograd_res[i][j]);
+            }
+        }
+    }
+#endif
+
+// ================================
 
     start = rdtsc();
     for(size_t i = 0; i < 16; i++){
@@ -638,20 +671,23 @@ void Strassen_Winograd_square_matmul(
     struct dimension matrix_dim;
     matrix_dim.dim_i = matrix_dim.dim_j = matrix_dim.dim_k = dim;
 
+    // A10 - A00
+    matrix_sub(&T0[0][0], Strassen_A10, Strassen_A00, dim, dim);
+    // A10 + A11 - A00
+    matrix_add(&T2[0][0], Strassen_A11, &T0[0][0], dim, dim);
 
-    // A00 * B00
+    // B01 - B11
+    matrix_sub(&T1[0][0], Strassen_B01, Strassen_B11, dim, dim);
+    // B00 + B11 - B01
+    matrix_sub(&T3[0][0], Strassen_B00, &T1[0][0], dim, dim);
+
+
+
+    // A00 * B00 + A01 * B10
     ikj_matmul_asm(&M3[0][0], Strassen_A00, Strassen_B00, &matrix_dim);
     matrix_add(Strassen_C00, Strassen_C00, &M3[0][0], dim, dim);
 
-    // A10 - A00
-    matrix_sub(&T0[0][0], Strassen_A10, Strassen_A00, dim, dim);
-    // B01 - B11
-    matrix_sub(&T1[0][0], Strassen_B01, Strassen_B11, dim, dim);
 
-    // A10 + A11 - A00
-    matrix_add(&T2[0][0], &T0[0][0], Strassen_A11, dim, dim);
-    // B00 + B11 - B01
-    matrix_sub(&T3[0][0], Strassen_B00, &T1[0][0], dim, dim);
     // A00 * B00 + (A10 + A11 - A00) * (B00 + B11 - B01)
     ikj_matmul_asm(&M3[0][0], &T2[0][0], &T3[0][0], &matrix_dim);
 
@@ -666,20 +702,23 @@ void Strassen_Winograd_square_matmul(
     // A10 * B00 + A11 * (B00 + B11 - B01)
     ikj_matmul_asm(&M3[0][0], &T0[0][0], &T1[0][0], &matrix_dim);
 
-    // A00 * B00 + A01 * B10
+    // A01 * B10
     ikj_matmul_asm(Strassen_C00, Strassen_A01, Strassen_B10, &matrix_dim);
 
+    // A00 + A01 - A10 - A11
+    matrix_sub_negacc(&T0[0][0], Strassen_A01, Strassen_A11, dim, dim);
     // B01 + B10 - B00 - B11
     matrix_sub_acc(&T1[0][0], Strassen_B10, Strassen_B00, dim, dim);
+
+    matrix_add(Strassen_C10, Strassen_C10, &M3[0][0], dim, dim);
+    matrix_add(Strassen_C11, Strassen_C11, &M3[0][0], dim, dim);
+
+
 
     // A10 * B00 + A11 * (B00 + B11 - B01) + A11 * (B01 + B10 - B00 - B11)
     // =
     // A10 * B00 + A11 * B10
-    matrix_add(Strassen_C10, Strassen_C10, &M3[0][0], dim, dim);
     ikj_matmul_asm(Strassen_C10, Strassen_A11, &T1[0][0], &matrix_dim);
-
-    // A00 + A01 - A10 - A11
-    matrix_sub_negacc(&T0[0][0], Strassen_A01, Strassen_A11, dim, dim);
 
 
 
@@ -713,7 +752,7 @@ void Strassen_Winograd_square_matmul(
     // A10 * B00 + A11 * (B00 + B11 - B01) + (A10 + A11) * (B01 - B00)
     // =
     // A10 * B01 + A11 * B11
-    matrix_add_acc(Strassen_C11, &M3[0][0], &T0[0][0], dim, dim);
+    matrix_add(Strassen_C11, Strassen_C11, &T0[0][0], dim, dim);
 
 
 
