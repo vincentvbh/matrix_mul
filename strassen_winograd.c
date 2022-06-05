@@ -228,7 +228,7 @@ void Strassen_Winograd_square_matmul(
 
     int16_t T0[SQUARE_DIM / 2][SQUARE_DIM / 2];
     int16_t T1[SQUARE_DIM / 2][SQUARE_DIM / 2];
-    int16_t T2[SQUARE_DIM / 2][SQUARE_DIM / 2];
+    // int16_t T2[SQUARE_DIM / 2][SQUARE_DIM / 2];
     int16_t T3[SQUARE_DIM / 2][SQUARE_DIM / 2];
 
     int16_t M3[SQUARE_DIM / 2][SQUARE_DIM / 2];
@@ -251,7 +251,7 @@ void Strassen_Winograd_square_matmul(
     // A10 * B00 + A11 * (B00 + B11 - B01) + (A10 + A11) * (B01 - B00)
     // =
     // A10 * B01 + A11 * B11
-    matrix_add(Strassen_C11, Strassen_C11, Strassen_C01, dim, dim);
+    // matrix_add(Strassen_C11, Strassen_C11, Strassen_C01, dim, dim);
 
     // A10 - A00
     matrix_sub(&T0[0][0], Strassen_A10, Strassen_A00, dim, dim);
@@ -275,7 +275,13 @@ void Strassen_Winograd_square_matmul(
     ikj_matmul_addsrc1_asm(&M3[0][0], Strassen_A11, &T3[0][0], &matrix_dim, &T0[0][0]);
     // ikj_matmul_asm(&M3[0][0], &T2[0][0], &T3[0][0], &matrix_dim);
     // A00 * B00 + (A10 + A11 - A00) * (B00 + B11 - B01)
-    matrix_add(Strassen_C01, Strassen_C01, &M3[0][0], dim, dim);
+
+    // A10 * B00 + A11 * (B00 + B11 - B01) + (A10 + A11) * (B01 - B00)
+    // =
+    // A10 * B01 + A11 * B11
+    // matrix_add(Strassen_C11, Strassen_C11, Strassen_C01, dim, dim);
+    // matrix_add(Strassen_C01, &M3[0][0], Strassen_C01, dim, dim);
+    matrix_addx2(Strassen_C11, Strassen_C01, Strassen_C11, &M3[0][0], Strassen_C01, dim, dim);
 
     // A00 * B00 + (A10 + A11 - A00) * (B00 + B11 - B01) + (A10 - A00) * (B01 - B11)
     // =
@@ -290,8 +296,7 @@ void Strassen_Winograd_square_matmul(
     matrix_addx2(Strassen_C10, Strassen_C11, Strassen_C10, Strassen_C11, &M3[0][0], dim, dim);
 
 
-    // A00 + A01 - A10 - A11
-    matrix_sub_negacc(&T0[0][0], Strassen_A01, Strassen_A11, dim, dim);
+
     // B01 + B10 - B00 - B11
     matrix_sub_acc(&T1[0][0], Strassen_B10, Strassen_B00, dim, dim);
     // A00 * B00 + A01 * B10
@@ -303,6 +308,8 @@ void Strassen_Winograd_square_matmul(
     // A10 * B00 + A11 * B10
     ikj_matmul_asm(Strassen_C10, Strassen_A11, &T1[0][0], &matrix_dim);
 
+    // A00 + A01 - A10 - A11
+    matrix_sub_negacc(&T0[0][0], Strassen_A01, Strassen_A11, dim, dim);
     // A00 * B00 + (A10 + A11 - A00) * (B00 + B11 - B01) + (A00 + A01 - A10 - A11) * B11
     // =
     // A00 * (B00 - B00 - B11 + B01 + B11) +
