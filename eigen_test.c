@@ -33,12 +33,12 @@ struct dimension matrix_dim;
 extern "C" void ikj_matmul_asm(int16_t*, int16_t*, int16_t*, struct dimension*);
 extern void ikj_matmul_asm(int16_t*, int16_t*, int16_t*, struct dimension*);
 
-extern "C" void ijk_matmul_asm(int16_t*, int16_t*, int16_t*, struct dimension*);
-extern void ijk_matmul_asm(int16_t*, int16_t*, int16_t*, struct dimension*);
+extern "C" void ijk_matmla_asm(int16_t*, int16_t*, int16_t*, struct dimension*);
+extern void ijk_matmla_asm(int16_t*, int16_t*, int16_t*, struct dimension*);
 #endif
 
 void ikj_matmul_SIMD(int16_t des[DENSE_DIM_I][DENSE_DIM_J], int16_t src1[DENSE_DIM_I][DENSE_DIM_K], int16_t src2[DENSE_DIM_K][DENSE_DIM_J]);
-void ijk_matmul_SIMD(int16_t des[DENSE_DIM_I][DENSE_DIM_J], int16_t src1[DENSE_DIM_I][DENSE_DIM_K], int16_t src2[DENSE_DIM_K][DENSE_DIM_J]);
+void ijk_matmla_SIMD(int16_t des[DENSE_DIM_I][DENSE_DIM_J], int16_t src1[DENSE_DIM_I][DENSE_DIM_K], int16_t src2[DENSE_DIM_K][DENSE_DIM_J]);
 
 
 int main(void){
@@ -195,7 +195,7 @@ int main(void){
 
     start = rdtsc();
     for(size_t i = 0; i < 16; i++){
-        ijk_matmul_asm(&N[0][0], &A0[0][0], &A1[0][0], &matrix_dim);
+        ijk_matmla_asm(&N[0][0], &A0[0][0], &A1[0][0], &matrix_dim);
     }
     end = rdtsc();
     ns = (end - start);
@@ -222,7 +222,7 @@ int main(void){
 
     start = rdtsc();
     for(size_t i = 0; i < 16; i++){
-        ijk_matmul_SIMD(N, A0, A1);
+        ijk_matmla_SIMD(N, A0, A1);
     }
     end = rdtsc();
     ns = (end - start);
@@ -319,7 +319,7 @@ int main(void){
 }
 
 
-void ijk_matmul_SIMD(int16_t des[DENSE_DIM_I][DENSE_DIM_J], int16_t src1[DENSE_DIM_I][DENSE_DIM_K], int16_t src2[DENSE_DIM_K][DENSE_DIM_J]){
+void ijk_matmla_SIMD(int16_t des[DENSE_DIM_I][DENSE_DIM_J], int16_t src1[DENSE_DIM_I][DENSE_DIM_K], int16_t src2[DENSE_DIM_K][DENSE_DIM_J]){
 
     int16x8_t t0;
     int16x8_t t1;

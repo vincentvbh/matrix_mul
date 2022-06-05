@@ -24,11 +24,15 @@ struct dimension{
 struct dimension matrix_dim;
 
 #ifdef ASM
+// mla by default
 extern "C" void ikj_matmul_asm(int16_t*, int16_t*, int16_t*, struct dimension*);
 extern void ikj_matmul_asm(int16_t*, int16_t*, int16_t*, struct dimension*);
 
 extern "C" void ijk_matmul_asm(int16_t*, int16_t*, int16_t*, struct dimension*);
 extern void ijk_matmul_asm(int16_t*, int16_t*, int16_t*, struct dimension*);
+
+extern "C" void ijk_matmla_asm(int16_t*, int16_t*, int16_t*, struct dimension*);
+extern void ijk_matmla_asm(int16_t*, int16_t*, int16_t*, struct dimension*);
 #endif
 
 void Strassen_square_matmul(
@@ -226,12 +230,6 @@ void Strassen_Winograd_square_matmul(
 
     int16_t M3[SQUARE_DIM / 2][SQUARE_DIM / 2];
 
-    for(size_t i = 0; i < dim; i++){
-        for(size_t j = 0; j < dim; j++){
-            M3[i][j] = 0;
-        }
-    }
-
     struct dimension matrix_dim;
     matrix_dim.dim_i = matrix_dim.dim_j = matrix_dim.dim_k = dim;
 
@@ -262,7 +260,7 @@ void Strassen_Winograd_square_matmul(
     matrix_sub(&T3[0][0], Strassen_B00, &T1[0][0], dim, dim);
 
     // A00 * B00
-    ikj_matmul_asm(&M3[0][0], Strassen_A00, Strassen_B00, &matrix_dim);
+    ijk_matmul_asm(&M3[0][0], Strassen_A00, Strassen_B00, &matrix_dim);
     // A00 * B00
     matrix_add(Strassen_C00, Strassen_C00, &M3[0][0], dim, dim);
 

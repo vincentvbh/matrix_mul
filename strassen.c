@@ -23,13 +23,15 @@ struct dimension{
 };
 struct dimension matrix_dim;
 
-#ifdef ASM
+// mla by default
 extern "C" void ikj_matmul_asm(int16_t*, int16_t*, int16_t*, struct dimension*);
 extern void ikj_matmul_asm(int16_t*, int16_t*, int16_t*, struct dimension*);
 
 extern "C" void ijk_matmul_asm(int16_t*, int16_t*, int16_t*, struct dimension*);
 extern void ijk_matmul_asm(int16_t*, int16_t*, int16_t*, struct dimension*);
-#endif
+
+extern "C" void ijk_matmla_asm(int16_t*, int16_t*, int16_t*, struct dimension*);
+extern void ijk_matmla_asm(int16_t*, int16_t*, int16_t*, struct dimension*);
 
 void Strassen_square_matmul(
     int16_t*, int16_t*, int16_t*, int16_t*,
@@ -217,30 +219,24 @@ void Strassen_square_matmul(
     int16_t M3[SQUARE_DIM / 2][SQUARE_DIM / 2];
     int16_t M4[SQUARE_DIM / 2][SQUARE_DIM / 2];
 
-    for(size_t i = 0; i < dim; i++){
-        for(size_t j = 0; j < dim; j++){
-            M0[i][j] = M1[i][j] = M2[i][j] = M3[i][j] = M4[i][j] = 0;
-        }
-    }
-
     struct dimension matrix_dim;
     matrix_dim.dim_i = matrix_dim.dim_j = matrix_dim.dim_k = dim;
 
     matrix_add(&T0[0][0], Strassen_A00, Strassen_A11, dim, dim);
     matrix_add(&T1[0][0], Strassen_B00, Strassen_B11, dim, dim);
-    ikj_matmul_asm(&M0[0][0], &T0[0][0], &T1[0][0], &matrix_dim);
+    ijk_matmul_asm(&M0[0][0], &T0[0][0], &T1[0][0], &matrix_dim);
 
     matrix_add(&T2[0][0], Strassen_A10, Strassen_A11, dim, dim);
-    ikj_matmul_asm(&M1[0][0], &T2[0][0], Strassen_B00, &matrix_dim);
+    ijk_matmul_asm(&M1[0][0], &T2[0][0], Strassen_B00, &matrix_dim);
 
     matrix_sub(&T3[0][0], Strassen_B01, Strassen_B11, dim, dim);
-    ikj_matmul_asm(&M2[0][0], Strassen_A00, &T3[0][0], &matrix_dim);
+    ijk_matmul_asm(&M2[0][0], Strassen_A00, &T3[0][0], &matrix_dim);
 
     matrix_sub(&T0[0][0], Strassen_B10, Strassen_B00, dim, dim);
-    ikj_matmul_asm(&M3[0][0], Strassen_A11, &T0[0][0], &matrix_dim);
+    ijk_matmul_asm(&M3[0][0], Strassen_A11, &T0[0][0], &matrix_dim);
 
     matrix_add(&T1[0][0], Strassen_A00, Strassen_A01, dim, dim);
-    ikj_matmul_asm(&M4[0][0], &T1[0][0], Strassen_B11, &matrix_dim);
+    ijk_matmul_asm(&M4[0][0], &T1[0][0], Strassen_B11, &matrix_dim);
 
     matrix_add_acc(Strassen_C01, &M2[0][0], &M4[0][0], dim, dim);
 
