@@ -54,12 +54,12 @@ _ikj_matmul_asm:
 
 // ================
 
-    _loopi:
+    _ikj_loopi:
 
 // ================
 
     mov w9, w11
-    _loopk:
+    _ikj_loopk:
 
     lsl w12, w11, #1
     ldr q0, [x1]
@@ -93,7 +93,7 @@ _ikj_matmul_asm:
 // ================
 
     mov w10, w15
-    _loopj:
+    _ikj_loopj:
 
     lsl w12, w15, #1
     add x25, x2, x12
@@ -215,7 +215,6 @@ _ikj_matmul_asm:
     str q18, [x22, x12]
     str q19, [x23, x12]
 
-    // DIM_J * 8 * 2
     lsl w12, w15, #4
 
     ldr q20, [x0, x12]
@@ -272,7 +271,7 @@ _ikj_matmul_asm:
     add x2, x2, #8*2
 
     sub w10, w10, #8
-    cbnz w10, _loopj
+    cbnz w10, _ikj_loopj
 
     lsl w12, w15, #1
     sub x0, x0, x12
@@ -285,7 +284,7 @@ _ikj_matmul_asm:
     add x2, x2, x12
 
     sub w9, w9, #8
-    cbnz w9, _loopk
+    cbnz w9, _ikj_loopk
 
     lsl w12, w11, #1
     sub x1, x1, x12
@@ -301,14 +300,14 @@ _ikj_matmul_asm:
     add x1, x1, x13
 
     sub w7, w7, #12
-    cbnz w7, _loopi
+    cbnz w7, _ikj_loopi
 
 // ================
-
 
     pop_all
 
     br lr
+
 
 .align 8
 .global ijk_matmul_asm
@@ -331,7 +330,12 @@ _ijk_matmul_asm:
     ldr w11, [x3, #4]
     ldr w15, [x3, #8]
 
+
+// ================
+
     _ijk_loopi:
+
+// ================
 
     mov w9, w15
     _ijk_loopj:
@@ -349,6 +353,8 @@ _ijk_matmul_asm:
     dup v29.8H, w12
     dup v30.8H, w12
     dup v31.8H, w12
+
+// ================
 
     mov w10, w11
     _ijk_loopk:
@@ -502,6 +508,8 @@ _ijk_matmul_asm:
     sub w10, w10, #8
     cbnz w10, _ijk_loopk
 
+// ================
+
     lsl w12, w15, #1
     add x25, x0, x12
     add x26, x25, x12
@@ -537,9 +545,10 @@ _ijk_matmul_asm:
     sub w9, w9, #8
     cbnz w9, _ijk_loopj
 
+// ================
+
     lsl w12, w15, #1
     sub x2, x2, x12
-
 
     lsl w12, w15, #1
     sub x0, x0, x12
@@ -551,11 +560,12 @@ _ijk_matmul_asm:
     sub w7, w7, #12
     cbnz w7, _ijk_loopi
 
-
+// ================
 
     pop_all
 
     br lr
+
 
 .align 8
 .global ijk_matmla_asm
@@ -577,7 +587,11 @@ _ijk_matmla_asm:
     ldr w11, [x3, #4]
     ldr w15, [x3, #8]
 
+// ================
+
     _ijk_mla_loopi:
+
+// ================
 
     mov w9, w15
     _ijk_mla_loopj:
@@ -603,6 +617,8 @@ _ijk_matmla_asm:
     ldr q29, [x25, x12]
     ldr q30, [x26, x12]
     ldr q31, [x27, x12]
+
+// ================
 
     mov w10, w11
     _ijk_mla_loopk:
@@ -756,6 +772,8 @@ _ijk_matmla_asm:
     sub w10, w10, #8
     cbnz w10, _ijk_mla_loopk
 
+// ================
+
     lsl w12, w15, #1
     add x25, x0, x12
     add x26, x25, x12
@@ -791,9 +809,10 @@ _ijk_matmla_asm:
     sub w9, w9, #8
     cbnz w9, _ijk_mla_loopj
 
+// ================
+
     lsl w12, w15, #1
     sub x2, x2, x12
-
 
     lsl w12, w15, #1
     sub x0, x0, x12
@@ -805,7 +824,7 @@ _ijk_matmla_asm:
     sub w7, w7, #12
     cbnz w7, _ijk_mla_loopi
 
-
+// ================
 
     pop_all
 
