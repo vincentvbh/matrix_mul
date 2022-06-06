@@ -5,7 +5,8 @@
 #define DENSE_DIM 120
 
 // multiple of 48
-#define SQUARE_DIM (48*4)
+// largest size for Apple M1: 48 * 15
+#define SQUARE_DIM (48*15)
 
 
 // multiple of 12

@@ -31,6 +31,10 @@ extern void ikj_matmul_asm(int16_t*, int16_t*, int16_t*, struct dimension*);
 extern "C" void ikj_matmul_addsrc1_asm(int16_t*, int16_t*, int16_t*, struct dimension*, int16_t*);
 extern void ikj_matmul_addsrc1_asm(int16_t*, int16_t*, int16_t*, struct dimension*, int16_t*);
 
+extern "C" void ikj_matmul_subnegaccsrc1_asm(int16_t*, int16_t*, int16_t*, struct dimension*, int16_t*, int16_t*);
+extern void ikj_matmul_subnegaccsrc1_asm(int16_t*, int16_t*, int16_t*, struct dimension*, int16_t*, int16_t*);
+
+
 extern "C" void ijk_matmul_asm(int16_t*, int16_t*, int16_t*, struct dimension*);
 extern void ijk_matmul_asm(int16_t*, int16_t*, int16_t*, struct dimension*);
 
@@ -236,7 +240,6 @@ void Strassen_Winograd_square_matmul(
     struct dimension matrix_dim;
     matrix_dim.dim_i = matrix_dim.dim_j = matrix_dim.dim_k = dim;
 
-    // matrix_add(&T0[0][0], Strassen_A10, Strassen_A11, dim, dim);
     matrix_sub(&T1[0][0], Strassen_B01, Strassen_B00, dim, dim);
 
     matrix_sub(Strassen_C11, Strassen_C11, Strassen_C01, dim, dim);
@@ -245,8 +248,8 @@ void Strassen_Winograd_square_matmul(
     // (A10 + A11) * (B01 - B00)
     // =
     // A00 * B01 + A01 * B11
-    ikj_matmul_addsrc1_asm(Strassen_C01, Strassen_A10, &T1[0][0], &matrix_dim, Strassen_A11);
-    // ikj_matmul_asm(Strassen_C01, &T0[0][0], &T1[0][0], &matrix_dim);
+    ikj_matmul_addsrc1_asm(Strassen_C01, Strassen_A10, &T1[0][0], &matrix_dim,
+        Strassen_A11);
 
     // A10 * B00 + A11 * (B00 + B11 - B01) + (A10 + A11) * (B01 - B00)
     // =
@@ -256,7 +259,6 @@ void Strassen_Winograd_square_matmul(
     // A10 - A00
     matrix_sub(&T0[0][0], Strassen_A10, Strassen_A00, dim, dim);
     // A10 + A11 - A00
-    // matrix_add(&T2[0][0], Strassen_A11, &T0[0][0], dim, dim);
 
     // B01 - B11
     matrix_sub(&T1[0][0], Strassen_B01, Strassen_B11, dim, dim);
@@ -269,8 +271,8 @@ void Strassen_Winograd_square_matmul(
     matrix_add(Strassen_C00, Strassen_C00, &M3[0][0], dim, dim);
 
     // A00 * B00 + (A10 + A11 - A00) * (B00 + B11 - B01)
-    ikj_matmul_addsrc1_asm(&M3[0][0], Strassen_A11, &T3[0][0], &matrix_dim, &T0[0][0]);
-    // ikj_matmul_asm(&M3[0][0], &T2[0][0], &T3[0][0], &matrix_dim);
+    ikj_matmul_addsrc1_asm(&M3[0][0], Strassen_A11, &T3[0][0], &matrix_dim,
+        &T0[0][0]);
     // A00 * B00 + (A10 + A11 - A00) * (B00 + B11 - B01)
     matrix_add(Strassen_C01, Strassen_C01, &M3[0][0], dim, dim);
 
@@ -287,8 +289,6 @@ void Strassen_Winograd_square_matmul(
     matrix_addx2(Strassen_C10, Strassen_C11, Strassen_C10, Strassen_C11, &M3[0][0], dim, dim);
 
 
-    // A00 + A01 - A10 - A11
-    matrix_sub_negacc(&T0[0][0], Strassen_A01, Strassen_A11, dim, dim);
     // B01 + B10 - B00 - B11
     matrix_sub_acc(&T1[0][0], Strassen_B10, Strassen_B00, dim, dim);
     // A00 * B00 + A01 * B10
@@ -308,7 +308,8 @@ void Strassen_Winograd_square_matmul(
     // A11 * (B00 + B11 - B01 - B11)
     // =
     // A00 * B01 + A01 * B11 + A10 * (B00 - B01) + A11 * (B00 - B01)
-    ikj_matmul_asm(Strassen_C01, &T0[0][0], Strassen_B11, &matrix_dim);
+    ikj_matmul_subnegaccsrc1_asm(Strassen_C01, &T0[0][0], Strassen_B11, &matrix_dim,
+            Strassen_A01, Strassen_A11);
 
 }
 
