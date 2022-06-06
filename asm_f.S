@@ -1062,7 +1062,7 @@ _ijk_matmul_asm:
     ldr q10, [x22, x12]
     ldr q11, [x23, x12]
 
-    lsl w12, w11, #1
+    lsl w12, w15, #1
     add x25, x2, x12
     add x26, x25, x12
     add x27, x26, x12
@@ -1097,7 +1097,7 @@ _ijk_matmul_asm:
     mla v30.8H, v13.8H, v10.H[1]
     mla v31.8H, v13.8H, v11.H[1]
 
-    lsl w12, w11, #3
+    lsl w12, w15, #3
     ldr q16, [x2, x12]
     ldr q17, [x25, x12]
     ldr q18, [x26, x12]
@@ -1235,6 +1235,7 @@ _ijk_matmul_asm:
     mov w13, #24
     mul w12, w15, w13
     add x0, x0, x12
+    mul w12, w11, w13
     add x1, x1, x12
 
     sub w7, w7, #12
@@ -1326,7 +1327,7 @@ _ijk_matmla_asm:
     ldr q10, [x22, x12]
     ldr q11, [x23, x12]
 
-    lsl w12, w11, #1
+    lsl w12, w15, #1
     add x25, x2, x12
     add x26, x25, x12
     add x27, x26, x12
@@ -1361,7 +1362,7 @@ _ijk_matmla_asm:
     mla v30.8H, v13.8H, v10.H[1]
     mla v31.8H, v13.8H, v11.H[1]
 
-    lsl w12, w11, #3
+    lsl w12, w15, #3
     ldr q16, [x2, x12]
     ldr q17, [x25, x12]
     ldr q18, [x26, x12]
@@ -1499,6 +1500,7 @@ _ijk_matmla_asm:
     mov w13, #24
     mul w12, w15, w13
     add x0, x0, x12
+    mul w12, w11, w13
     add x1, x1, x12
 
     sub w7, w7, #12

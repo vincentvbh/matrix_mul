@@ -175,8 +175,8 @@ int main(void){
     printf("ikj SIMD intrinsics Dense cycles:\n%lld\n", ns);
 
 #ifdef TEST
-    for(size_t i = 0; i < SQUARE_DIM; i++){
-        for(size_t j = 0; j < SQUARE_DIM; j++){
+    for(size_t i = 0; i < DENSE_DIM_I; i++){
+        for(size_t j = 0; j < DENSE_DIM_J; j++){
             if(A[i][j] != N[i][j]){
                 fprintf(stderr, "%4zu, %4zu: %8d, %8d\n", i, j,
                     A[i][j], N[i][j]);
@@ -202,8 +202,8 @@ int main(void){
     printf("ijk SIMD asm Dense cycles:\n%lld\n", ns);
 
 #ifdef TEST
-    for(size_t i = 0; i < SQUARE_DIM; i++){
-        for(size_t j = 0; j < SQUARE_DIM; j++){
+    for(size_t i = 0; i < DENSE_DIM_I; i++){
+        for(size_t j = 0; j < DENSE_DIM_J; j++){
             if(A[i][j] != N[i][j]){
                 fprintf(stderr, "%4zu, %4zu: %8d, %8d\n", i, j,
                     A[i][j], N[i][j]);
@@ -229,8 +229,8 @@ int main(void){
     printf("ijk SIMD intrinsics Dense cycles:\n%lld\n", ns);
 
 #ifdef TEST
-    for(size_t i = 0; i < SQUARE_DIM; i++){
-        for(size_t j = 0; j < SQUARE_DIM; j++){
+    for(size_t i = 0; i < DENSE_DIM_I; i++){
+        for(size_t j = 0; j < DENSE_DIM_J; j++){
             if(A[i][j] != N[i][j]){
                 fprintf(stderr, "%4zu, %4zu: %8d, %8d\n", i, j,
                     A[i][j], N[i][j]);

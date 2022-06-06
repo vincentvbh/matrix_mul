@@ -37,9 +37,6 @@ extern void ikj_matmul_subnegaccsrc1_asm(int16_t*, int16_t*, int16_t*, struct di
 
 extern "C" void ijk_matmul_asm(int16_t*, int16_t*, int16_t*, struct dimension*);
 extern void ijk_matmul_asm(int16_t*, int16_t*, int16_t*, struct dimension*);
-
-extern "C" void ijk_matmla_asm(int16_t*, int16_t*, int16_t*, struct dimension*);
-extern void ijk_matmla_asm(int16_t*, int16_t*, int16_t*, struct dimension*);
 #endif
 
 void Strassen_square_matmul(
@@ -232,7 +229,6 @@ void Strassen_Winograd_square_matmul(
 
     int16_t T0[SQUARE_DIM / 2][SQUARE_DIM / 2];
     int16_t T1[SQUARE_DIM / 2][SQUARE_DIM / 2];
-    // int16_t T2[SQUARE_DIM / 2][SQUARE_DIM / 2];
     int16_t T3[SQUARE_DIM / 2][SQUARE_DIM / 2];
 
     int16_t M3[SQUARE_DIM / 2][SQUARE_DIM / 2];
@@ -240,26 +236,19 @@ void Strassen_Winograd_square_matmul(
     struct dimension matrix_dim;
     matrix_dim.dim_i = matrix_dim.dim_j = matrix_dim.dim_k = dim;
 
+    // B01 - B00
     matrix_sub(&T1[0][0], Strassen_B01, Strassen_B00, dim, dim);
 
     matrix_sub(Strassen_C11, Strassen_C11, Strassen_C01, dim, dim);
 
-    // A00 * B01 + A01 * B11 + A10 * (B00 - B01) + A11 * (B00 - B01) +
     // (A10 + A11) * (B01 - B00)
-    // =
-    // A00 * B01 + A01 * B11
     ikj_matmul_addsrc1_asm(Strassen_C01, Strassen_A10, &T1[0][0], &matrix_dim,
         Strassen_A11);
-
-    // A10 * B00 + A11 * (B00 + B11 - B01) + (A10 + A11) * (B01 - B00)
-    // =
-    // A10 * B01 + A11 * B11
+    // (A10 + A11) * (B01 - B00)
     matrix_add(Strassen_C11, Strassen_C11, Strassen_C01, dim, dim);
 
     // A10 - A00
     matrix_sub(&T0[0][0], Strassen_A10, Strassen_A00, dim, dim);
-    // A10 + A11 - A00
-
     // B01 - B11
     matrix_sub(&T1[0][0], Strassen_B01, Strassen_B11, dim, dim);
     // B00 + B11 - B01
@@ -285,7 +274,7 @@ void Strassen_Winograd_square_matmul(
     // A10 * B00 + A11 * (B00 + B11 - B01)
     ikj_matmul_asm(&M3[0][0], &T0[0][0], &T1[0][0], &matrix_dim);
     // A10 * B00 + A11 * (B00 + B11 - B01)
-    // A10 * B00 + A11 * (B00 + B11 - B01)
+    // (A10 + A11) * (B01 - B00) + A10 * B00 + A11 * (B00 + B11 - B01)
     matrix_addx2(Strassen_C10, Strassen_C11, Strassen_C10, Strassen_C11, &M3[0][0], dim, dim);
 
 
