@@ -38,8 +38,6 @@
 ikj_matmul_asm:
 _ikj_matmul_asm:
 
-    //br lr
-
     push_all
 
 //    for(size_t i = 0; i < DIM_I; i++){
@@ -50,21 +48,20 @@ _ikj_matmul_asm:
 //        }
 //    }
 
-    ldr w4, [x3, #0]
-    ldr w5, [x3, #4]
-    ldr w6, [x3, #8]
+    ldr w7, [x3, #0]
+    ldr w11, [x3, #4]
+    ldr w15, [x3, #8]
 
 // ================
 
-    mov w8, w4
     _loopi:
 
 // ================
 
-    mov w9, w5
+    mov w9, w11
     _loopk:
 
-    lsl w12, w5, #1
+    lsl w12, w11, #1
     ldr q0, [x1]
     add x1, x1, x12
     ldr q1, [x1]
@@ -90,15 +87,15 @@ _ikj_matmul_asm:
     ldr q11, [x1]
     add x1, x1, x12
     mov w13, #24
-    mul w12, w5, w13
+    mul w12, w11, w13
     sub x1, x1, x12
 
 // ================
 
-    mov w10, w6
+    mov w10, w15
     _loopj:
 
-    lsl w12, w6, #1
+    lsl w12, w15, #1
     add x25, x2, x12
     add x26, x25, x12
     add x27, x26, x12
@@ -166,8 +163,7 @@ _ikj_matmul_asm:
     str q14, [x22]
     str q15, [x23]
 
-    // DIM_J * 4 * 2
-    lsl w12, w6, #3
+    lsl w12, w15, #3
 
     ldr q16, [x0, x12]
     ldr q17, [x21, x12]
@@ -220,7 +216,7 @@ _ikj_matmul_asm:
     str q19, [x23, x12]
 
     // DIM_J * 8 * 2
-    lsl w12, w6, #4
+    lsl w12, w15, #4
 
     ldr q20, [x0, x12]
     ldr q21, [x21, x12]
@@ -278,43 +274,34 @@ _ikj_matmul_asm:
     sub w10, w10, #8
     cbnz w10, _loopj
 
-    lsl w12, w6, #1
+    lsl w12, w15, #1
     sub x0, x0, x12
     sub x2, x2, x12
-    //sub x0, x0, #DIM_J*2
-    //sub x2, x2, #DIM_J*2
 
 // ================
 
     add x1, x1, #8*2
-    lsl w12, w6, #4
+    lsl w12, w15, #4
     add x2, x2, x12
-    //add x2, x2, #(DIM_J*8)*2
 
     sub w9, w9, #8
     cbnz w9, _loopk
 
-    lsl w12, w5, #1
+    lsl w12, w11, #1
     sub x1, x1, x12
-    mul w13, w12, w6
+    mul w13, w12, w15
     sub x2, x2, x13
-    //sub x1, x1, #DIM_K*2
-    //sub x2, x2, #DIM_K*DIM_J*2
 
 // ================
 
     mov w14, #24
-    mul w12, w6, w14
+    mul w12, w15, w14
     add x0, x0, x12
-    mul w13, w5, w14
+    mul w13, w11, w14
     add x1, x1, x13
-    //add x0, x0, #DIM_J*4*2
-    //add x0, x0, #DIM_J*8*2
-    //add x1, x1, #DIM_K*4*2
-    //add x1, x1, #DIM_K*8*2
 
-    sub w8, w8, #12
-    cbnz w8, _loopi
+    sub w7, w7, #12
+    cbnz w7, _loopi
 
 // ================
 
@@ -333,20 +320,20 @@ _ijk_matmul_asm:
 
 //    for(size_t i = 0; i < DIM_I; i++){
 //        for(size_t j = 0; j < DIM_J; j++){
+//            des[i][j] = 0;
 //            for(size_t k = 0; k < DIM_K; k++){
 //                des[i][j] += src1[i][k] * src2[k][j];
 //            }
 //        }
 //    }
 
-    ldr w4, [x3, #0]
-    ldr w5, [x3, #4]
-    ldr w6, [x3, #8]
+    ldr w7, [x3, #0]
+    ldr w11, [x3, #4]
+    ldr w15, [x3, #8]
 
-    mov w8, w4
     _ijk_loopi:
 
-    mov w9, w6
+    mov w9, w15
     _ijk_loopj:
 
     mov w12, #0
@@ -363,10 +350,10 @@ _ijk_matmul_asm:
     dup v30.8H, w12
     dup v31.8H, w12
 
-    mov w10, w5
+    mov w10, w11
     _ijk_loopk:
 
-    lsl w12, w5, #1
+    lsl w12, w11, #1
 
     add x21, x1, x12
     add x22, x21, x12
@@ -377,19 +364,19 @@ _ijk_matmul_asm:
     ldr q2, [x22]
     ldr q3, [x23]
 
-    lsl w12, w5, #3
+    lsl w12, w11, #3
     ldr q4, [x1, x12]
     ldr q5, [x21, x12]
     ldr q6, [x22, x12]
     ldr q7, [x23, x12]
 
-    lsl w12, w5, #4
+    lsl w12, w11, #4
     ldr q8, [x1, x12]
     ldr q9, [x21, x12]
     ldr q10, [x22, x12]
     ldr q11, [x23, x12]
 
-    lsl w12, w5, #1
+    lsl w12, w11, #1
     add x25, x2, x12
     add x26, x25, x12
     add x27, x26, x12
@@ -424,7 +411,7 @@ _ijk_matmul_asm:
     mla v30.8H, v13.8H, v10.H[1]
     mla v31.8H, v13.8H, v11.H[1]
 
-    lsl w12, w5, #3
+    lsl w12, w11, #3
     ldr q16, [x2, x12]
     ldr q17, [x25, x12]
     ldr q18, [x26, x12]
@@ -509,13 +496,13 @@ _ijk_matmul_asm:
     mla v31.8H, v19.8H, v11.H[7]
 
     add x1, x1, #16
-    lsl w12, w6, #4
+    lsl w12, w15, #4
     add x2, x2, x12
 
     sub w10, w10, #8
     cbnz w10, _ijk_loopk
 
-    lsl w12, w6, #1
+    lsl w12, w15, #1
     add x25, x0, x12
     add x26, x25, x12
     add x27, x26, x12
@@ -525,22 +512,22 @@ _ijk_matmul_asm:
     str q22, [x26]
     str q23, [x27]
 
-    lsl w12, w6, #3
+    lsl w12, w15, #3
     str q24, [x0, x12]
     str q25, [x25, x12]
     str q26, [x26, x12]
     str q27, [x27, x12]
 
-    lsl w12, w6, #4
+    lsl w12, w15, #4
     str q28, [x0, x12]
     str q29, [x25, x12]
     str q30, [x26, x12]
     str q31, [x27, x12]
 
-    lsl w12, w5, #1
+    lsl w12, w11, #1
     sub x1, x1, x12
 
-    mul w12, w6, w5
+    mul w12, w15, w11
     lsl w12, w12, #1
     sub x2, x2, x12
 
@@ -550,19 +537,19 @@ _ijk_matmul_asm:
     sub w9, w9, #8
     cbnz w9, _ijk_loopj
 
-    lsl w12, w6, #1
+    lsl w12, w15, #1
     sub x2, x2, x12
 
 
-    lsl w12, w6, #1
+    lsl w12, w15, #1
     sub x0, x0, x12
     mov w13, #24
-    mul w12, w6, w13
+    mul w12, w15, w13
     add x0, x0, x12
     add x1, x1, x12
 
-    sub w8, w8, #12
-    cbnz w8, _ijk_loopi
+    sub w7, w7, #12
+    cbnz w7, _ijk_loopi
 
 
 
@@ -586,17 +573,16 @@ _ijk_matmla_asm:
 //        }
 //    }
 
-    ldr w4, [x3, #0]
-    ldr w5, [x3, #4]
-    ldr w6, [x3, #8]
+    ldr w7, [x3, #0]
+    ldr w11, [x3, #4]
+    ldr w15, [x3, #8]
 
-    mov w8, w4
     _ijk_mla_loopi:
 
-    mov w9, w6
+    mov w9, w15
     _ijk_mla_loopj:
 
-    lsl w12, w6, #1
+    lsl w12, w15, #1
     add x25, x0, x12
     add x26, x25, x12
     add x27, x26, x12
@@ -606,22 +592,22 @@ _ijk_matmla_asm:
     ldr q22, [x26]
     ldr q23, [x27]
 
-    lsl w12, w6, #3
+    lsl w12, w15, #3
     ldr q24, [x0, x12]
     ldr q25, [x25, x12]
     ldr q26, [x26, x12]
     ldr q27, [x27, x12]
 
-    lsl w12, w6, #4
+    lsl w12, w15, #4
     ldr q28, [x0, x12]
     ldr q29, [x25, x12]
     ldr q30, [x26, x12]
     ldr q31, [x27, x12]
 
-    mov w10, w5
+    mov w10, w11
     _ijk_mla_loopk:
 
-    lsl w12, w5, #1
+    lsl w12, w11, #1
 
     add x21, x1, x12
     add x22, x21, x12
@@ -632,19 +618,19 @@ _ijk_matmla_asm:
     ldr q2, [x22]
     ldr q3, [x23]
 
-    lsl w12, w5, #3
+    lsl w12, w11, #3
     ldr q4, [x1, x12]
     ldr q5, [x21, x12]
     ldr q6, [x22, x12]
     ldr q7, [x23, x12]
 
-    lsl w12, w5, #4
+    lsl w12, w11, #4
     ldr q8, [x1, x12]
     ldr q9, [x21, x12]
     ldr q10, [x22, x12]
     ldr q11, [x23, x12]
 
-    lsl w12, w5, #1
+    lsl w12, w11, #1
     add x25, x2, x12
     add x26, x25, x12
     add x27, x26, x12
@@ -679,7 +665,7 @@ _ijk_matmla_asm:
     mla v30.8H, v13.8H, v10.H[1]
     mla v31.8H, v13.8H, v11.H[1]
 
-    lsl w12, w5, #3
+    lsl w12, w11, #3
     ldr q16, [x2, x12]
     ldr q17, [x25, x12]
     ldr q18, [x26, x12]
@@ -764,13 +750,13 @@ _ijk_matmla_asm:
     mla v31.8H, v19.8H, v11.H[7]
 
     add x1, x1, #16
-    lsl w12, w6, #4
+    lsl w12, w15, #4
     add x2, x2, x12
 
     sub w10, w10, #8
     cbnz w10, _ijk_mla_loopk
 
-    lsl w12, w6, #1
+    lsl w12, w15, #1
     add x25, x0, x12
     add x26, x25, x12
     add x27, x26, x12
@@ -780,22 +766,22 @@ _ijk_matmla_asm:
     str q22, [x26]
     str q23, [x27]
 
-    lsl w12, w6, #3
+    lsl w12, w15, #3
     str q24, [x0, x12]
     str q25, [x25, x12]
     str q26, [x26, x12]
     str q27, [x27, x12]
 
-    lsl w12, w6, #4
+    lsl w12, w15, #4
     str q28, [x0, x12]
     str q29, [x25, x12]
     str q30, [x26, x12]
     str q31, [x27, x12]
 
-    lsl w12, w5, #1
+    lsl w12, w11, #1
     sub x1, x1, x12
 
-    mul w12, w6, w5
+    mul w12, w15, w11
     lsl w12, w12, #1
     sub x2, x2, x12
 
@@ -805,19 +791,19 @@ _ijk_matmla_asm:
     sub w9, w9, #8
     cbnz w9, _ijk_mla_loopj
 
-    lsl w12, w6, #1
+    lsl w12, w15, #1
     sub x2, x2, x12
 
 
-    lsl w12, w6, #1
+    lsl w12, w15, #1
     sub x0, x0, x12
     mov w13, #24
-    mul w12, w6, w13
+    mul w12, w15, w13
     add x0, x0, x12
     add x1, x1, x12
 
-    sub w8, w8, #12
-    cbnz w8, _ijk_mla_loopi
+    sub w7, w7, #12
+    cbnz w7, _ijk_mla_loopi
 
 
 
