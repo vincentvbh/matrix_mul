@@ -1,5 +1,13 @@
 # Matrix Multiplications
 
+## Basic Information
+- Apple M1
+- `g++-11` with `-O3`
+- Strassen's with 7 multiplications and 18 additions
+- Winograd's improvement with 7 multiplications and 15 additions. There is an error in the wiki, we compute the following:
+    - $\begin{pmatrix} a & b \end{pmatrix} $
+
+
 # 48 x 2
 ## Strassen's
 ```
