@@ -54,7 +54,6 @@ postprocessing cycles:
 Strassen_Winograd with preprocessing cycles:
 485234
 ```
-##
 
 # 48 x 3
 ## Strassen's
@@ -92,7 +91,6 @@ postprocessing cycles:
 Strassen_Winograd with preprocessing cycles:
 1599976
 ```
-##
 
 # 48 x 4
 ## Strassen's
@@ -130,7 +128,6 @@ postprocessing cycles:
 Strassen_Winograd with preprocessing cycles:
 3707514
 ```
-##
 
 # 48 x 5
 ## Strassen's
@@ -168,7 +165,6 @@ postprocessing cycles:
 Strassen_Winograd with preprocessing cycles:
 7113471
 ```
-##
 
 # 48 x 6
 ## Strassen's
@@ -206,7 +202,6 @@ postprocessing cycles:
 Strassen_Winograd with preprocessing cycles:
 12115112
 ```
-##
 
 # 48 x 7
 ## Strassen's
@@ -244,7 +239,6 @@ postprocessing cycles:
 Strassen_Winograd with preprocessing cycles:
 18959373
 ```
-##
 
 # 48 x 8
 ## Strassen's
@@ -282,7 +276,6 @@ postprocessing cycles:
 Strassen_Winograd with preprocessing cycles:
 28102656
 ```
-##
 
 # 48 x 15
 ## Strassen's
@@ -320,7 +313,6 @@ postprocessing cycles:
 Strassen_Winograd with preprocessing cycles:
 179537165
 ```
-##
 
 # Comparing to Eigen
 
