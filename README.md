@@ -4,8 +4,8 @@
 - Apple M1
 - `g++-11` with `-O3`
 - Strassen's with 7 multiplications and 18 additions
-- Winograd's improvement with 7 multiplications and 15 additions. There is an error in the wiki, we compute the following:
-    - $\begin{pmatrix} A_{0, 0} & A_{0, 1}\\ A_{1, 0} & A_{1, 1}  \end{pmatrix}$
+- Winograd's improvement with 7 multiplications and 15 additions. There is an error in the wiki, we compute the following (written in MatLab syntax):
+    - $[]$
 
 
 # 48 x 2
