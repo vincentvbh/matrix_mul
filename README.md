@@ -2,6 +2,7 @@
 
 ## Basic Information
 - Apple M1
+- This is a software work
 - `g++-11` with `-O3`
 - Strassen's with 7 multiplications and 18 additions
 - Winograd's form with 7 multiplications and 15 additions. There is a typo in the wiki, we compute the following (written in MatLab syntax):
@@ -13,7 +14,7 @@
     - We have
         - $C_{0, 0} = A_{0, 0} B_{0, 0} + A_{0, 1} B_{1, 0}$
         - $C_{0, 1} = w + v + (A_{0, 0} + A_{0, 1} - A_{1, 0} - A_{1, 1}) B_{1, 1}$
-        - $C_{1, 0} = w + u + A_{1, 1} (B_{0, 1} + B_{1, 0} - B_{0, 0}) - B_{1, 1}$
+        - $C_{1, 0} = w + u + A_{1, 1} (B_{0, 1} + B_{1, 0} - B_{0, 0} - B_{1, 1})$
         - $C_{1, 1} = w + u + v$
 
 
